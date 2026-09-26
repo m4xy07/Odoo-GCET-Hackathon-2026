@@ -5,9 +5,10 @@ import { Location } from '@/models/Location';
 import { Operation } from '@/models/Operation';
 import { Product } from '@/models/Product';
 import { StockQuant } from '@/models/StockQuant';
+import { StockMove } from '@/models/StockMove';
 import { stockState } from './catalog';
 import { listMoves } from './inventory';
-import { startOfToday } from './rules';
+import { moveDirection, startOfToday } from './rules';
 
 export type DashboardFilters = {
   type?: OpType;
@@ -152,4 +153,58 @@ export async function getDashboard(
     },
     recent,
   };
+}
+
+// ---- moves per day (the dashboard trend chart) ----
+
+export type MoveTrendDay = {
+  date: string;
+  in: number;
+  out: number;
+  internal: number;
+};
+
+const TREND_DAYS = 14;
+const DAY_MS = 24 * 60 * 60 * 1000;
+// days are counted in India time, whatever timezone the server runs in
+const dayKey = (d: Date) =>
+  d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+// Ledger lines per day for the last 14 days, split by direction. A count of lines, not a sum of
+// quantities, because kg and units cannot be added together.
+export async function getMoveTrend(
+  f: Pick<DashboardFilters, 'warehouse' | 'location'>,
+): Promise<MoveTrendDay[]> {
+  await connectDB();
+  const since = new Date(Date.now() - TREND_DAYS * DAY_MS);
+  const locationIds = f.location
+    ? [oid(f.location)]
+    : f.warehouse
+      ? ((await Location.find({
+          warehouse: f.warehouse,
+          type: 'internal',
+        }).distinct('_id')) as Types.ObjectId[])
+      : null;
+
+  const match: Record<string, unknown> = { date: { $gte: since } };
+  if (locationIds)
+    match.$or = [
+      { fromLocation: { $in: locationIds } },
+      { toLocation: { $in: locationIds } },
+    ];
+  const moves = await StockMove.find(match)
+    .select('date type toLocation')
+    .populate<{ toLocation: { type: string } | null }>('toLocation', 'type')
+    .lean();
+
+  const days = new Map<string, MoveTrendDay>();
+  for (let i = TREND_DAYS - 1; i >= 0; i--) {
+    const date = dayKey(new Date(Date.now() - i * DAY_MS));
+    days.set(date, { date, in: 0, out: 0, internal: 0 });
+  }
+  for (const m of moves) {
+    const day = days.get(dayKey(m.date));
+    if (day) day[moveDirection(m.type, m.toLocation?.type === 'internal')] += 1;
+  }
+  return [...days.values()];
 }
