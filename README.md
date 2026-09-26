@@ -8,6 +8,19 @@ Built for the Odoo x GCET Hyderabad Hackathon 2026 (virtual round).
 
 > Try it: sign up with any Login ID. The demo runs on a Clerk development instance, so an email like `yourname+clerk_test@example.com` verifies with the code `424242`.
 
+## Walk through it (about 5 minutes)
+
+The live app starts with a warehouse `WH`, three furniture products and a few receipts and deliveries in every state. This path follows the problem statement's own example: 100 kg of steel in, some moved, some delivered, a few kilos damaged.
+
+1. **Sign up.** Try a weak password first to see the rules, then land on the dashboard.
+2. **Products → New:** "Steel Rods", SKU `STEEL001`, category Raw Material, unit kg, reorder min 20. It shows as out of stock with a suggested order.
+3. **Operations → Receipts → New:** receive 100 kg from "Azure Interior", press **To Do**, then **Validate**. Stock goes up and the receipt can be printed.
+4. **Operations → Internal Transfers → New:** move 40 kg from `WH/Stock1` to `WH/Stock2`. The total stays 100 kg.
+5. **Operations → Deliveries → New:** deliver 120 kg. Only 60 kg are free in Stock1, so the line turns red and the delivery waits. Change it to 20 kg, save, and validate.
+6. **The bell** lists Chair as low. "Create receipt for 40" opens a filled receipt; validate it and the waiting Chair delivery moves to Ready on its own.
+7. **Operations → Adjustments → New:** Steel Rods at `WH/Stock1`, counted 37. The 3 kg difference is logged as damaged.
+8. **Move History:** every step above as ledger lines, incoming green, outgoing red. Steel Rods adds up to 77 kg, and the dashboard counts match.
+
 ## The one idea
 
 ```
