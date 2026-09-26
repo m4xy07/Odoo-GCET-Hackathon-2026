@@ -70,7 +70,7 @@ function ProductForm({ product, onDone }: { product?: ProductDetail; onDone: (pr
       const saved = product
         ? await send<ProductDetail>('PATCH', `/api/products/${product.id}`, values)
         : await send<ProductDetail>('POST', '/api/products', values);
-      notification({ status: 'success', title: product ? 'Product updated' : 'Product created' });
+      notification({ status: 'success', variant: 'stroke', title: product ? 'Product updated' : 'Product created' });
       mutate(LOW_STOCK_KEY); // a new reorder min or opening stock can change the bell
       onDone(saved);
     } catch (err) {

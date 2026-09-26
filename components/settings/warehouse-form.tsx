@@ -49,7 +49,7 @@ function WarehouseForm({ warehouse, onDone }: { warehouse?: WarehouseRow; onDone
     try {
       if (warehouse) await send('PATCH', `/api/warehouses/${warehouse.id}`, values);
       else await send('POST', '/api/warehouses', values);
-      notification({ status: 'success', title: warehouse ? 'Warehouse updated' : 'Warehouse created' });
+      notification({ status: 'success', variant: 'stroke', title: warehouse ? 'Warehouse updated' : 'Warehouse created' });
       onDone();
     } catch (err) {
       const fields = err instanceof ApiError ? err.fields : {};

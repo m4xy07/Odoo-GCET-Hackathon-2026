@@ -22,7 +22,7 @@ export function DeleteConfirm({ open, onOpenChange, title, onConfirm }: Props) {
     setError(null);
     try {
       await onConfirm();
-      notification({ status: 'success', title: 'Deleted' });
+      notification({ status: 'success', variant: 'stroke', title: 'Deleted' });
       onOpenChange(false);
     } catch (err) {
       setError((err as Error).message);

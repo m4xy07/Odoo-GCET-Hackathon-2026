@@ -116,7 +116,7 @@ function ConfirmAdjust({ row, location, counted, onClose }: ConfirmProps) {
         countedQty: counted,
         reason: reason.trim() || undefined,
       });
-      notification({ status: 'success', title: `Stock updated, logged as ${op.reference}` });
+      notification({ status: 'success', variant: 'stroke', title: `Stock updated, logged as ${op.reference}` });
       mutate(LOW_STOCK_KEY); // the bell count may have changed
       onClose(true);
     } catch (err) {

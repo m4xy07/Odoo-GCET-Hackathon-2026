@@ -28,6 +28,7 @@ export function LowStockBell() {
     } catch {}
     notification({
       status: 'warning',
+      variant: 'stroke',
       title: `${count} ${count === 1 ? 'product is' : 'products are'} low or out of stock`,
     });
   }, [count]);

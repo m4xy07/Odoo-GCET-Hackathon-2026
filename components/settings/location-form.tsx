@@ -63,7 +63,7 @@ function LocationForm({ location, warehouses, onDone }: FormProps) {
     try {
       if (location) await send('PATCH', `/api/locations/${location.id}`, values);
       else await send('POST', '/api/locations', values);
-      notification({ status: 'success', title: location ? 'Location updated' : 'Location created' });
+      notification({ status: 'success', variant: 'stroke', title: location ? 'Location updated' : 'Location created' });
       onDone();
     } catch (err) {
       const fields = err instanceof ApiError ? err.fields : {};
