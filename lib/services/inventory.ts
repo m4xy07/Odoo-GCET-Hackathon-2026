@@ -114,10 +114,11 @@ export async function applyAction(id: string, action: StockAction, userId: strin
 // reservation, then takes it again only if the new quantities are in stock.
 export async function updateLines(id: string, lines: OperationInput['lines']) {
   await connectDB();
-  await checkProducts(lines);
   await mongoose.connection.transaction(async (session) => {
     const { op } = await loadOperation(id, session);
+    // status first, so a locked document says so instead of complaining about its lines
     if (op.status !== 'waiting' && op.status !== 'ready') throw new HttpError(409, 'This operation can no longer be edited');
+    await checkProducts(lines);
     if (op.type === 'OUT' && op.status === 'ready') await reserve(op, -1, session);
 
     op.set('lines', lines);
