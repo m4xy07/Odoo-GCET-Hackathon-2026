@@ -31,7 +31,8 @@ const inDays = (n: number) => new Date(Date.now() + n * DAY);
 
 async function main() {
   const db = process.env.MONGODB_DB || 'stocksense';
-  if (db === 'stocksense' && !process.argv.includes('--demo')) {
+  const demo = process.argv.includes('--demo');
+  if (db === 'stocksense' && !demo) {
     throw new Error(
       'MONGODB_DB is the shared demo database. Run with --demo if you really mean it.',
     );
@@ -88,7 +89,7 @@ async function main() {
   const customers = { id: String((await virtualLocation('customer'))._id) };
   if (!stock1 || !stock2) throw new Error('could not create stock locations');
 
-  // ---- catalog. Opening stock is logged as an "Initial stock" adjustment. Chair ends up low, Steel Rods out of stock. ----
+  // ---- catalog. Opening stock is logged as an "Initial stock" adjustment. Chair ends up low. ----
   const furniture = await createCategory({ name: 'Furniture' });
   const raw = await createCategory({ name: 'Raw Material' });
   const opening = (quantity: number) => ({ locationId: stock1.id, quantity });
@@ -131,18 +132,22 @@ async function main() {
     },
     userId,
   );
-  await createProduct(
-    {
-      name: 'Steel Rods',
-      sku: 'STEEL001',
-      category: raw.id,
-      uom: 'kg',
-      unitCost: 80,
-      reorderMin: 20,
-      reorderQty: 200,
-    },
-    userId,
-  );
+  // The recorded demo creates Steel Rods live, so the demo database leaves it out.
+  // Dev databases keep it at 0 kg because the operations e2e spec works on it.
+  if (!demo) {
+    await createProduct(
+      {
+        name: 'Steel Rods',
+        sku: 'STEEL001',
+        category: raw.id,
+        uom: 'kg',
+        unitCost: 80,
+        reorderMin: 20,
+        reorderQty: 200,
+      },
+      userId,
+    );
+  }
 
   // ---- operations in every state the dashboard counts ----
   async function op(
@@ -186,7 +191,7 @@ async function main() {
 
   const moves = await StockMove.countDocuments();
   console.log(
-    `done: 1 warehouse, 3 locations, 4 products, 9 operations, ${moves} ledger lines. Steel Rods starts at 0 for the demo receipt.`,
+    `done: 1 warehouse, 3 locations, ${demo ? '3 products (Steel Rods is created in the demo)' : '4 products'}, 9 operations, ${moves} ledger lines.`,
   );
 }
 
