@@ -26,7 +26,9 @@ test.describe('signed out', () => {
     await page.getByLabel('Enter Password', { exact: true }).fill('weakpass');
     await page.getByLabel('Re-Enter Password', { exact: true }).fill('other');
     await page.getByRole('button', { name: 'SIGN UP' }).click();
-    await expect(page.getByText('Login ID must be 6 to 12 characters')).toBeVisible();
+    await expect(
+      page.getByText('Login ID must be 6 to 12 characters'),
+    ).toBeVisible();
     await expect(page.getByText('Enter a valid email')).toBeVisible();
     await expect(page.getByText('Use more than 8 characters')).toBeVisible();
     await expect(page.getByText('Passwords do not match')).toBeVisible();
@@ -37,7 +39,13 @@ test.describe('signed in', () => {
   test('the top bar reaches every section', async ({ page }) => {
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Main' });
-    for (const label of ['Dashboard', 'Operations', 'Products', 'Move History', 'Settings']) {
+    for (const label of [
+      'Dashboard',
+      'Operations',
+      'Products',
+      'Move History',
+      'Settings',
+    ]) {
       await expect(nav.getByText(label, { exact: true })).toBeVisible();
     }
     await nav.getByRole('button', { name: 'Operations' }).click();
@@ -47,6 +55,10 @@ test.describe('signed in', () => {
 
   test('my profile shows the signed in Login ID', async ({ page }) => {
     await openPage(page, '/profile', 'My Profile');
-    await expect(page.getByText(process.env.E2E_CLERK_USER_USERNAME!, { exact: true }).first()).toBeVisible();
+    await expect(
+      page
+        .getByText(process.env.E2E_CLERK_USER_USERNAME!, { exact: true })
+        .first(),
+    ).toBeVisible();
   });
 });

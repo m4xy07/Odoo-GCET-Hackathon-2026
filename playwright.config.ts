@@ -15,7 +15,12 @@ export default defineConfig({
   use: { baseURL, trace: 'retain-on-failure' },
   webServer: process.env.E2E_BASE_URL
     ? undefined
-    : { command: 'npm run dev', url: baseURL, reuseExistingServer: true, timeout: 120_000 },
+    : {
+        command: 'npm run dev',
+        url: baseURL,
+        reuseExistingServer: true,
+        timeout: 120_000,
+      },
   projects: [
     { name: 'setup', testMatch: /global\.setup\.ts/ },
     {

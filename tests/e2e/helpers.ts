@@ -9,5 +9,7 @@ export const SIGNED_OUT = { cookies: [], origins: [] };
 // Open a page and wait for its title, so specs read like the demo script
 export async function openPage(page: Page, path: string, title: string) {
   await page.goto(path);
-  await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: title }),
+  ).toBeVisible();
 }
