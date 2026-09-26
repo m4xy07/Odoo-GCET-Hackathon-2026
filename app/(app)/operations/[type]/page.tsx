@@ -14,6 +14,7 @@ import { RiAddLine, RiCloseLine } from '@remixicon/react';
 import * as Button from '@/components/ui/button';
 import { DataTable, type Column } from '@/components/lists/DataTable';
 import { KanbanBoard } from '@/components/lists/KanbanBoard';
+import { PageHeader } from '@/components/shell/page-header';
 import { SearchBar } from '@/components/lists/SearchBar';
 import { ViewToggle, type ListView } from '@/components/lists/ViewToggle';
 import {
@@ -145,84 +146,84 @@ export default function OperationsListPage() {
   );
 
   return (
-    <div className='flex flex-col gap-6'>
-      <div className='flex flex-wrap items-center gap-3'>
-        <Button.Root asChild size='small'>
-          <Link href={`/operations/${slug}/new`}>
-            <Button.Icon as={RiAddLine} />
-            New
-          </Link>
-        </Button.Root>
-        <h1 className='text-[28px] leading-[34px] font-semibold'>
-          {page.title}
-        </h1>
-        <div className='ml-auto flex w-full items-center gap-2 sm:w-auto'>
-          <SearchBar
-            onSearch={setQuery}
-            placeholder='Search reference or contact'
-          />
-          <ViewToggle value={view} onChange={setView} />
-        </div>
-      </div>
-
-      {filterLabel && (
-        <Link
-          href={`/operations/${slug}`}
-          className='bg-bg-weak-50 text-text-sub-600 hover:text-text-strong-950 flex w-fit items-center gap-1 rounded-full py-1 pr-2 pl-3 text-[13px]'
-        >
-          Showing {filterLabel.toLowerCase()} only
-          <RiCloseLine className='size-4' aria-label='Clear filter' />
-        </Link>
-      )}
-
-      {error ? (
-        <div className='rounded-16 border-stroke-soft-200 flex flex-col items-start gap-3 border p-6'>
-          <p className='text-[15px]'>{error.message}</p>
-          <Button.Root
-            size='xsmall'
-            variant='neutral'
-            mode='stroke'
-            onClick={() => mutate()}
-          >
-            Try again
+    <>
+      <PageHeader
+        title={page.title}
+        action={
+          <Button.Root asChild size='small'>
+            <Link href={`/operations/${slug}/new`}>
+              <Button.Icon as={RiAddLine} />
+              New
+            </Link>
           </Button.Root>
-        </div>
-      ) : (
-        <AnimatePresence mode='wait' initial={false}>
-          <motion.div
-            key={view}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+        }
+      >
+        <SearchBar
+          onSearch={setQuery}
+          placeholder='Search reference or contact'
+        />
+        <ViewToggle value={view} onChange={setView} />
+      </PageHeader>
+      <div className='flex flex-col gap-6'>
+        {filterLabel && (
+          <Link
+            href={`/operations/${slug}`}
+            className='bg-bg-weak-50 text-text-sub-600 hover:text-text-strong-950 flex w-fit items-center gap-1 rounded-full py-1 pr-2 pl-3 text-[13px]'
           >
-            {view === 'list' || !data ? (
-              <DataTable
-                columns={columns}
-                rows={data}
-                isLoading={isLoading}
-                rowKey={(op) => op.id}
-                onRowClick={openOperation}
-                empty={empty}
-              />
-            ) : data.length === 0 ? (
-              empty
-            ) : (
-              <KanbanBoard
-                columns={page.statuses.map((s) => ({
-                  key: s,
-                  label: STATUS_LABEL[s],
-                }))}
-                rows={data}
-                groupOf={(op) => op.status}
-                rowKey={(op) => op.id}
-                renderCard={(op) => <OperationCard op={op} />}
-                onCardClick={openOperation}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      )}
-    </div>
+            Showing {filterLabel.toLowerCase()} only
+            <RiCloseLine className='size-4' aria-label='Clear filter' />
+          </Link>
+        )}
+
+        {error ? (
+          <div className='rounded-16 border-stroke-soft-200 flex flex-col items-start gap-3 border p-6'>
+            <p className='text-[15px]'>{error.message}</p>
+            <Button.Root
+              size='xsmall'
+              variant='neutral'
+              mode='stroke'
+              onClick={() => mutate()}
+            >
+              Try again
+            </Button.Root>
+          </div>
+        ) : (
+          <AnimatePresence mode='wait' initial={false}>
+            <motion.div
+              key={view}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
+            >
+              {view === 'list' || !data ? (
+                <DataTable
+                  columns={columns}
+                  rows={data}
+                  isLoading={isLoading}
+                  rowKey={(op) => op.id}
+                  onRowClick={openOperation}
+                  empty={empty}
+                />
+              ) : data.length === 0 ? (
+                empty
+              ) : (
+                <KanbanBoard
+                  columns={page.statuses.map((s) => ({
+                    key: s,
+                    label: STATUS_LABEL[s],
+                  }))}
+                  rows={data}
+                  groupOf={(op) => op.status}
+                  rowKey={(op) => op.id}
+                  renderCard={(op) => <OperationCard op={op} />}
+                  onCardClick={openOperation}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
+      </div>
+    </>
   );
 }
