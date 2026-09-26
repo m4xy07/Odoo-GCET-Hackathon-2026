@@ -8,9 +8,16 @@ config({ path: '.env.local', quiet: true });
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
 import { operationSchema } from '@/lib/validators';
-import { createLocation, createWarehouse, ensureVirtualLocations, getVirtualLocation } from '@/lib/services/catalog';
+import {
+  createCategory,
+  createLocation,
+  createProduct,
+  createWarehouse,
+  ensureVirtualLocations,
+  getVirtualLocation,
+} from '@/lib/services/catalog';
 import { createOperation } from '@/lib/services/operations';
-import { adjustStock, applyAction } from '@/lib/services/inventory';
+import { applyAction } from '@/lib/services/inventory';
 import { Category } from '@/models/Category';
 import { Counter } from '@/models/Counter';
 import { Location } from '@/models/Location';
@@ -52,26 +59,29 @@ async function main() {
   const customers = await getVirtualLocation('customer');
   if (!stock1 || !stock2) throw new Error('could not create stock locations');
 
-  // ---- catalog (direct until the product service lands) ----
-  const [furniture, raw] = await Category.create([{ name: 'Furniture' }, { name: 'Raw Material' }]);
-  const [desk, table, chair, steel] = await Product.create([
-    { name: 'Desk', sku: 'DESK001', category: furniture._id, uom: 'unit', unitCost: 3000, reorderMin: 5, reorderQty: 20 },
-    { name: 'Table', sku: 'TABLE001', category: furniture._id, uom: 'unit', unitCost: 3000, reorderMin: 5, reorderQty: 10 },
-    { name: 'Chair', sku: 'CHAIR001', category: furniture._id, uom: 'unit', unitCost: 1200, reorderMin: 10, reorderQty: 40 },
-    { name: 'Steel Rods', sku: 'STEEL001', category: raw._id, uom: 'kg', unitCost: 80, reorderMin: 20, reorderQty: 200 },
-  ]);
-  const id = (doc: { _id: unknown }) => String(doc._id);
-
-  // ---- opening stock, logged as adjustments. Chair ends up low, Steel Rods out of stock. ----
-  await adjustStock({ productId: id(desk), locationId: stock1.id, countedQty: 50, reason: 'Opening stock' }, userId);
-  await adjustStock({ productId: id(table), locationId: stock1.id, countedQty: 20, reason: 'Opening stock' }, userId);
-  await adjustStock({ productId: id(chair), locationId: stock1.id, countedQty: 8, reason: 'Opening stock' }, userId);
+  // ---- catalog. Opening stock is logged as an "Initial stock" adjustment. Chair ends up low, Steel Rods out of stock. ----
+  const furniture = await createCategory({ name: 'Furniture' });
+  const raw = await createCategory({ name: 'Raw Material' });
+  const opening = (quantity: number) => ({ locationId: stock1.id, quantity });
+  const desk = await createProduct(
+    { name: 'Desk', sku: 'DESK001', category: furniture.id, uom: 'unit', unitCost: 3000, reorderMin: 5, reorderQty: 20, initialStock: opening(50) },
+    userId,
+  );
+  const table = await createProduct(
+    { name: 'Table', sku: 'TABLE001', category: furniture.id, uom: 'unit', unitCost: 3000, reorderMin: 5, reorderQty: 10, initialStock: opening(20) },
+    userId,
+  );
+  const chair = await createProduct(
+    { name: 'Chair', sku: 'CHAIR001', category: furniture.id, uom: 'unit', unitCost: 1200, reorderMin: 10, reorderQty: 40, initialStock: opening(8) },
+    userId,
+  );
+  await createProduct({ name: 'Steel Rods', sku: 'STEEL001', category: raw.id, uom: 'kg', unitCost: 80, reorderMin: 20, reorderQty: 200 }, userId);
 
   // ---- operations in every state the dashboard counts ----
   async function op(
     type: 'IN' | 'OUT' | 'INT',
     contact: string,
-    product: { _id: unknown },
+    product: { id: string },
     quantity: number,
     scheduledInDays: number,
     actions: ('confirm' | 'validate')[],
@@ -84,7 +94,7 @@ async function main() {
       destLocation: to,
       scheduledDate: inDays(scheduledInDays),
       deliveryAddress: type === 'OUT' ? `${contact}, Hyderabad` : undefined,
-      lines: [{ product: id(product), quantity }],
+      lines: [{ product: product.id, quantity }],
     });
     const created = await createOperation(input, userId);
     for (const action of actions) await applyAction(created.id, action, userId);
