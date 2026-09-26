@@ -3,16 +3,18 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm, type Path } from 'react-hook-form';
+import { Controller, useForm, useWatch, type Path } from 'react-hook-form';
 import { mutate } from 'swr';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
 import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
 import * as Button from '@/components/ui/button';
 import { notification } from '@/hooks/use-notification';
+import { adjustmentDiff } from '@/lib/services/rules';
 import type { OperationDetail } from '@/lib/types';
 import { adjustSchema, type AdjustInput } from '@/lib/validators';
-import { useProducts, useStockLocations } from './hooks';
+import { cn } from '@/utils/cn';
+import { useProductStock, useProducts, useStockLocations } from './hooks';
 import { productLabel } from './LinesTable';
 import { ApiError, request } from './request';
 import { SelectField } from './SelectField';
@@ -32,6 +34,20 @@ export function AdjustmentForm() {
   const { errors, isSubmitting } = formState;
   // set once the count is saved: the check plays, then the adjustment opens
   const [done, setDone] = React.useState<{ id: string; change: string } | null>(null);
+
+  const [productId, locationId, countedQty] = useWatch({ control, name: ['productId', 'locationId', 'countedQty'] });
+  const { data: stock, error: stockError } = useProductStock(productId);
+  const picked = !!productId && !!locationId;
+  const onHand = stock?.find((r) => r.locationId === locationId)?.quantity ?? 0;
+  const onHandText = !picked ? '' : stockError ? 'Could not load' : !stock ? 'Loading...' : String(onHand);
+  const where = locations?.find((l) => l.id === locationId)?.fullName ?? '';
+  // same math the server runs, so the preview matches the move that gets logged
+  const diff = picked && stock && typeof countedQty === 'number' && countedQty >= 0 ? adjustmentDiff(onHand, countedQty) : null;
+  const preview =
+    !diff ? null
+    : diff.direction === 'none' ? 'Matches on hand, nothing to log'
+    : diff.direction === 'in' ? `${diff.quantity} will be added to ${where}`
+    : `${diff.quantity} will be removed from ${where}`;
 
   const onSubmit = handleSubmit(async (input) => {
     try {
@@ -99,17 +115,32 @@ export function AdjustmentForm() {
             />
           )}
         />
-        <Field
-          id='countedQty'
-          label='Counted Quantity'
-          type='number'
-          step='any'
-          min='0'
-          inputMode='decimal'
-          className='tabular-nums'
-          error={errors.countedQty?.message}
-          {...register('countedQty', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
-        />
+        <Field id='onHand' label='On hand' value={onHandText} placeholder='Pick a product and a location' readOnly className='tabular-nums' />
+        <div>
+          <Field
+            id='countedQty'
+            label='Counted Quantity'
+            type='number'
+            step='any'
+            min='0'
+            inputMode='decimal'
+            className='tabular-nums'
+            error={errors.countedQty?.message}
+            {...register('countedQty', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
+          />
+          {preview && !errors.countedQty && (
+            <p
+              aria-live='polite'
+              className={cn(
+                'mt-1 text-[13px] leading-[18px] text-text-sub-600',
+                diff?.direction === 'in' && 'text-success-base',
+                diff?.direction === 'out' && 'text-error-base',
+              )}
+            >
+              {preview}
+            </p>
+          )}
+        </div>
         <Field id='reason' label='Reason' placeholder='Damaged, found, recount' error={errors.reason?.message} {...register('reason')} />
       </div>
       <ValidateSuccess open={!!done} label={done?.change} onDone={() => done && router.replace(`/operations/adjustments/${done.id}`)} />

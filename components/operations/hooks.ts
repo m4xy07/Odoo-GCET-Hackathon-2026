@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
-import type { OperationDetail, OpType, ProductRow } from '@/lib/types';
+import type { OperationDetail, OpType, ProductRow, ProductStockRow } from '@/lib/types';
 import { fetcher } from './request';
 
 export type StockLocation = { id: string; fullName: string };
@@ -16,3 +16,7 @@ export const useBlankOperation = (type: OpType) =>
 export const useProducts = () => useSWR<ProductRow[]>('/api/products', fetcher);
 
 export const useStockLocations = () => useSWR<StockLocation[]>('/api/locations?type=internal', fetcher);
+
+// Only locations that hold the product come back, a missing one means 0 on hand
+export const useProductStock = (productId: string) =>
+  useSWR<ProductStockRow[]>(productId ? `/api/products/${productId}/stock` : null, fetcher);
