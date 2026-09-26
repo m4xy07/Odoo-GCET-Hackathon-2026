@@ -16,6 +16,12 @@ export type ProductRow = {
   stockState: 'ok' | 'low' | 'out';
 };
 
+// GET /api/products/:id, the edit form needs the raw ids and fields the list does not show
+export type ProductDetail = ProductRow & { categoryId: string; reorderQty: number; active: boolean };
+
+// GET /api/products/:id/stock, one row per internal location that holds the product
+export type ProductStockRow = { locationId: string; location: string; quantity: number; reserved: number; freeToUse: number };
+
 export type StockRow = {
   productId: string;
   name: string;
