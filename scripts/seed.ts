@@ -34,27 +34,59 @@ const inDays = (n: number) => new Date(Date.now() + n * DAY);
 async function main() {
   const db = process.env.MONGODB_DB || 'stocksense';
   if (db === 'stocksense' && !process.argv.includes('--demo')) {
-    throw new Error('MONGODB_DB is the shared demo database. Run with --demo if you really mean it.');
+    throw new Error(
+      'MONGODB_DB is the shared demo database. Run with --demo if you really mean it.',
+    );
   }
   await connectDB();
   console.log(`seeding ${db}`);
 
   // start clean, but keep users: they mirror Clerk accounts and are recreated on sign in anyway
-  const wiped = [Warehouse, Location, Category, Product, StockQuant, Operation, StockMove, Counter];
+  const wiped = [
+    Warehouse,
+    Location,
+    Category,
+    Product,
+    StockQuant,
+    Operation,
+    StockMove,
+    Counter,
+  ];
   await Promise.all(wiped.map((m) => m.collection.deleteMany({})));
 
   // operations need a responsible user: the oldest real account, or a placeholder on an empty database
   const user =
     (await User.findOne().sort({ createdAt: 1 })) ??
-    (await User.create({ clerkId: 'seed', loginId: 'manager', email: 'manager@stocksense.local', name: 'Warehouse Manager' }));
+    (await User.create({
+      clerkId: 'seed',
+      loginId: 'manager',
+      email: 'manager@stocksense.local',
+      name: 'Warehouse Manager',
+    }));
   const userId = String(user._id);
 
   // ---- settings ----
   await ensureVirtualLocations();
-  const wh = await createWarehouse({ name: 'Main Warehouse', shortCode: 'WH', address: 'Plot 12, IDA Uppal, Hyderabad 500039' });
-  const stock1 = await createLocation({ name: 'Stock1', shortCode: 'Stock1', warehouse: wh.id });
-  const stock2 = await createLocation({ name: 'Stock2', shortCode: 'Stock2', warehouse: wh.id });
-  await createLocation({ name: 'Production', shortCode: 'Prod', warehouse: wh.id });
+  const wh = await createWarehouse({
+    name: 'Main Warehouse',
+    shortCode: 'WH',
+    address: 'Plot 12, IDA Uppal, Hyderabad 500039',
+  });
+  const stock1 = await createLocation({
+    name: 'Stock1',
+    shortCode: 'Stock1',
+    warehouse: wh.id,
+  });
+  const stock2 = await createLocation({
+    name: 'Stock2',
+    shortCode: 'Stock2',
+    warehouse: wh.id,
+  });
+  await createLocation({
+    name: 'Production',
+    shortCode: 'Prod',
+    warehouse: wh.id,
+  });
   const vendors = await getVirtualLocation('vendor');
   const customers = await getVirtualLocation('customer');
   if (!stock1 || !stock2) throw new Error('could not create stock locations');
@@ -64,18 +96,56 @@ async function main() {
   const raw = await createCategory({ name: 'Raw Material' });
   const opening = (quantity: number) => ({ locationId: stock1.id, quantity });
   const desk = await createProduct(
-    { name: 'Desk', sku: 'DESK001', category: furniture.id, uom: 'unit', unitCost: 3000, reorderMin: 5, reorderQty: 20, initialStock: opening(50) },
+    {
+      name: 'Desk',
+      sku: 'DESK001',
+      category: furniture.id,
+      uom: 'unit',
+      unitCost: 3000,
+      reorderMin: 5,
+      reorderQty: 20,
+      initialStock: opening(50),
+    },
     userId,
   );
   const table = await createProduct(
-    { name: 'Table', sku: 'TABLE001', category: furniture.id, uom: 'unit', unitCost: 3000, reorderMin: 5, reorderQty: 10, initialStock: opening(20) },
+    {
+      name: 'Table',
+      sku: 'TABLE001',
+      category: furniture.id,
+      uom: 'unit',
+      unitCost: 3000,
+      reorderMin: 5,
+      reorderQty: 10,
+      initialStock: opening(20),
+    },
     userId,
   );
   const chair = await createProduct(
-    { name: 'Chair', sku: 'CHAIR001', category: furniture.id, uom: 'unit', unitCost: 1200, reorderMin: 10, reorderQty: 40, initialStock: opening(8) },
+    {
+      name: 'Chair',
+      sku: 'CHAIR001',
+      category: furniture.id,
+      uom: 'unit',
+      unitCost: 1200,
+      reorderMin: 10,
+      reorderQty: 40,
+      initialStock: opening(8),
+    },
     userId,
   );
-  await createProduct({ name: 'Steel Rods', sku: 'STEEL001', category: raw.id, uom: 'kg', unitCost: 80, reorderMin: 20, reorderQty: 200 }, userId);
+  await createProduct(
+    {
+      name: 'Steel Rods',
+      sku: 'STEEL001',
+      category: raw.id,
+      uom: 'kg',
+      unitCost: 80,
+      reorderMin: 20,
+      reorderQty: 200,
+    },
+    userId,
+  );
 
   // ---- operations in every state the dashboard counts ----
   async function op(
@@ -86,7 +156,12 @@ async function main() {
     scheduledInDays: number,
     actions: ('confirm' | 'validate')[],
   ) {
-    const [from, to] = type === 'IN' ? [vendors.id, stock1.id] : type === 'OUT' ? [stock1.id, customers.id] : [stock1.id, stock2.id];
+    const [from, to] =
+      type === 'IN'
+        ? [vendors.id, stock1.id]
+        : type === 'OUT'
+          ? [stock1.id, customers.id]
+          : [stock1.id, stock2.id];
     const input = operationSchema.parse({
       type,
       contact,
@@ -113,7 +188,9 @@ async function main() {
   await op('INT', '', desk, 5, 0, ['confirm', 'validate']); // Stock1 to Stock2, total unchanged
 
   const moves = await StockMove.countDocuments();
-  console.log(`done: 1 warehouse, 3 locations, 4 products, 9 operations, ${moves} ledger lines. Steel Rods starts at 0 for the demo receipt.`);
+  console.log(
+    `done: 1 warehouse, 3 locations, 4 products, 9 operations, ${moves} ledger lines. Steel Rods starts at 0 for the demo receipt.`,
+  );
 }
 
 main()
