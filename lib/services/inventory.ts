@@ -1,4 +1,4 @@
-import mongoose, { isValidObjectId, type ClientSession, type HydratedDocument, type Types } from 'mongoose';
+import mongoose, { isValidObjectId, Types, type ClientSession, type HydratedDocument } from 'mongoose';
 import { HttpError } from '@/lib/api';
 import { connectDB } from '@/lib/db';
 import type { MoveRow, OpType } from '@/lib/types';
@@ -87,8 +87,19 @@ async function moveStock(op: Op, fromStock: boolean, toStock: boolean, userId: s
 }
 
 // To Do, Check availability, Validate and Cancel all come through here
+// Stock just became free somewhere: waiting deliveries from there get another look, oldest first.
+// Each check is its own small transaction. A delivery that changed meanwhile is simply skipped.
+async function recheckWaiting(locationId: Types.ObjectId, userId: string) {
+  const waiting = await Operation.find({ type: 'OUT', status: 'waiting', sourceLocation: locationId })
+    .sort({ scheduledDate: 1, createdAt: 1 })
+    .select('_id')
+    .lean();
+  for (const { _id } of waiting) await applyAction(String(_id), 'check', userId).catch(() => null);
+}
+
 export async function applyAction(id: string, action: StockAction, userId: string) {
   await connectDB();
+  let freed = null as Types.ObjectId | null; // where stock was added or released
   await mongoose.connection.transaction(async (session) => {
     const { op, fromStock, toStock } = await loadOperation(id, session);
     const wasReserved = op.type === 'OUT' && op.status === 'ready';
@@ -106,7 +117,10 @@ export async function applyAction(id: string, action: StockAction, userId: strin
     op.status = next;
     if (next === 'done') op.doneAt = new Date();
     await op.save({ session });
+    if (action === 'validate' && toStock) freed = op.destLocation;
+    if (action === 'cancel' && wasReserved) freed = op.sourceLocation;
   });
+  if (freed) await recheckWaiting(freed, userId);
   return getOperation(id);
 }
 
@@ -137,7 +151,7 @@ export async function updateLines(id: string, lines: OperationInput['lines']) {
 // Used by the Stock page inline edit, the Adjustment form and opening stock on a new product.
 export async function adjustStock({ productId, locationId, countedQty, reason }: AdjustInput, userId: string) {
   await connectDB();
-  const operationId = await mongoose.connection.transaction(async (session) => {
+  const { operationId, added } = await mongoose.connection.transaction(async (session) => {
     const location = await Location.findById(locationId).session(session).lean();
     if (location?.type !== 'internal') throw new HttpError(400, 'Pick a stock location', { locationId: 'Pick a stock location' });
     const warehouse = await Warehouse.findById(location.warehouse).session(session).lean();
@@ -181,8 +195,9 @@ export async function adjustStock({ productId, locationId, countedQty, reason }:
     );
     const change = diff.direction === 'in' ? diff.quantity : -diff.quantity;
     await StockQuant.updateOne({ product: productId, location: locationId }, { $inc: { quantity: change } }, { upsert: true, session });
-    return String(op._id);
+    return { operationId: String(op._id), added: diff.direction === 'in' };
   });
+  if (added) await recheckWaiting(new Types.ObjectId(locationId), userId);
   return getOperation(operationId);
 }
 
