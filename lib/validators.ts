@@ -31,6 +31,10 @@ export const signUpSchema = z
     message: 'Password cannot contain your Login ID',
   });
 
+export const resetPasswordSchema = z
+  .object({ password, confirm: z.string() })
+  .refine((v) => v.password === v.confirm, { path: ['confirm'], message: 'Passwords do not match' });
+
 // sign in only checks that something was typed, the real answer comes from Clerk
 export const signInSchema = z.object({
   loginId: z.string().trim().min(1, 'Enter your Login ID'),
@@ -107,6 +111,7 @@ export const adjustSchema = z.object({
 
 export type SignUpInput = z.infer<typeof signUpSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type WarehouseInput = z.infer<typeof warehouseSchema>;
 export type LocationInput = z.infer<typeof locationSchema>;
 export type CategoryInput = z.infer<typeof categorySchema>;
