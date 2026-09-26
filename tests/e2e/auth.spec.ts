@@ -33,6 +33,19 @@ test.describe('signed out', () => {
     await expect(page.getByText('Use more than 8 characters')).toBeVisible();
     await expect(page.getByText('Passwords do not match')).toBeVisible();
   });
+
+  // read only: Clerk looks the identifier up and finds nothing, so no code is ever sent
+  test('forgot password says so when the Login ID does not exist', async ({
+    page,
+  }) => {
+    await setupClerkTestingToken({ page });
+    await page.goto('/forgot-password');
+    await page.getByLabel('Login Id or Email Id').fill('nobody_here9');
+    await page.getByRole('button', { name: 'SEND CODE' }).click();
+    await expect(
+      page.getByText('No account found for that Login ID or email'),
+    ).toBeVisible();
+  });
 });
 
 test.describe('signed in', () => {
