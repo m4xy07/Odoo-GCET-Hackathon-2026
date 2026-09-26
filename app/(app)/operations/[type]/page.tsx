@@ -21,6 +21,7 @@ import {
   STATUS_LABEL,
   StatusBadge,
 } from '@/components/lists/StatusBadge';
+import { formatDate } from '@/components/lists/format';
 import { EmptyState } from '@/components/motion/EmptyState';
 import { fetcher } from '@/lib/fetcher';
 import type { OperationRow, OpStatus, OpType } from '@/lib/types';
@@ -73,13 +74,6 @@ function OperationCard({ op }: { op: OperationRow }) {
     </div>
   );
 }
-
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
 
 const columns: Column<OperationRow>[] = [
   {
