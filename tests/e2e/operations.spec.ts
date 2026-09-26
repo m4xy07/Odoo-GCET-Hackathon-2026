@@ -3,6 +3,11 @@ import { openPage } from './helpers';
 
 const STEEL = '[STEEL001] Steel Rods';
 
+// This spec writes stock. The live database is reseeded for the demo recording, so a run there
+// must be asked for on purpose (E2E_WRITE=1, after checking with the lead). Local runs always go.
+const base = process.env.E2E_BASE_URL ?? '';
+test.skip(!!base && !/localhost|127\.0\.0\.1/.test(base) && process.env.E2E_WRITE !== '1', 'writes stock: on live, run with E2E_WRITE=1');
+
 // On hand across all locations, read the way the Stock page reads it
 const onHand = (page: Page) =>
   page.evaluate(async () => {
