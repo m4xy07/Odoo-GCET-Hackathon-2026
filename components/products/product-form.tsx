@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import useSWR, { mutate } from 'swr';
-import { Controller, useForm, type Control } from 'react-hook-form';
+import { Controller, useForm, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiErrorWarningFill } from '@remixicon/react';
 import * as Button from '@/components/ui/button';
@@ -182,8 +182,8 @@ function ProductForm({ product, onDone }: { product?: ProductDetail; onDone: (pr
 
 type OpeningStockProps = {
   control: Control<ProductInput>;
-  register: ReturnType<typeof useForm<ProductInput>>['register'];
-  errors: ReturnType<typeof useForm<ProductInput>>['formState']['errors'];
+  register: UseFormRegister<ProductInput>;
+  errors: FieldErrors<ProductInput>;
   onRemove: () => void;
 };
 

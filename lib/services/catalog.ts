@@ -293,8 +293,9 @@ export async function createProduct({ initialStock, ...fields }: ProductInput, u
 export async function updateProduct(id: string, input: ProductInput) {
   checkId(id, 'Product');
   await connectDB();
-  const { initialStock, ...fields } = input;
-  void initialStock; // opening stock only applies when creating
+  // everything but initialStock, which only applies when creating
+  const { name, sku, category, uom, unitCost, reorderMin, reorderQty } = input;
+  const fields = { name, sku, category, uom, unitCost, reorderMin, reorderQty };
   await checkCategory(fields.category);
   let product;
   try {
@@ -374,14 +375,12 @@ export async function getProductStock(id: string): Promise<ProductStockRow[]> {
   const quants = await StockQuant.find({ product: id, $or: [{ quantity: { $ne: 0 } }, { reserved: { $ne: 0 } }] })
     .populate<{ location: { _id: unknown; fullName: string; type: string } | null }>('location', 'fullName type')
     .lean();
-  return quants
-    .flatMap((q) => (q.location?.type === 'internal' ? [{ ...q, location: q.location }] : []))
-    .map((q) => ({
-      locationId: String(q.location._id),
-      location: q.location.fullName,
-      quantity: q.quantity ?? 0,
-      reserved: q.reserved ?? 0,
-      freeToUse: (q.quantity ?? 0) - (q.reserved ?? 0),
-    }))
-    .sort((a, b) => a.location.localeCompare(b.location));
+  const rows: ProductStockRow[] = [];
+  for (const q of quants) {
+    if (q.location?.type !== 'internal') continue; // only internal locations hold real stock
+    const quantity = q.quantity ?? 0;
+    const reserved = q.reserved ?? 0;
+    rows.push({ locationId: String(q.location._id), location: q.location.fullName, quantity, reserved, freeToUse: quantity - reserved });
+  }
+  return rows.sort((a, b) => a.location.localeCompare(b.location));
 }
