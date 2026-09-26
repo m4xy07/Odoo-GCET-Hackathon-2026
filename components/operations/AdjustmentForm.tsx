@@ -7,6 +7,7 @@ import { Controller, useForm, useWatch, type Path } from 'react-hook-form';
 import { mutate } from 'swr';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
+import { LOW_STOCK_KEY } from '@/components/alerts/LowStockBell';
 import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
 import * as Button from '@/components/ui/button';
 import { notification } from '@/hooks/use-notification';
@@ -55,6 +56,7 @@ export function AdjustmentForm() {
       const removed = op.sourceLocationId === input.locationId;
       const change = removed ? `${op.lines[0].quantity} removed from ${op.from}` : `${op.lines[0].quantity} added to ${op.to}`;
       mutate(`/api/operations/${op.id}`, op, { revalidate: false });
+      mutate(LOW_STOCK_KEY); // the count may have fixed or caused a low stock alert
       setDone({ id: op.id, change });
     } catch (err) {
       if (err instanceof ApiError && err.fields) {

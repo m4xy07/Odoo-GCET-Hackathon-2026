@@ -10,6 +10,7 @@ import { mutate } from 'swr';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
 import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
+import { LOW_STOCK_KEY } from '@/components/alerts/LowStockBell';
 import { LateTag } from '@/components/lists/StatusBadge';
 import * as Button from '@/components/ui/button';
 import * as Modal from '@/components/ui/modal';
@@ -132,7 +133,10 @@ export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Prop
       // saving new quantities can already move a delivery between waiting and ready
       const stillAllowed = action && saved.actions.includes(action) ? action : undefined;
       try {
-        if (stillAllowed) saved = await request<OperationDetail>(`/api/operations/${saved.id}/${stillAllowed}`, 'POST');
+        if (stillAllowed) {
+          saved = await request<OperationDetail>(`/api/operations/${saved.id}/${stillAllowed}`, 'POST');
+          mutate(LOW_STOCK_KEY); // stock or reservations moved, so the bell count may have too
+        }
         announce(saved, stillAllowed);
         if (stillAllowed === 'validate') setValidated(true);
       } catch (err) {
@@ -146,6 +150,7 @@ export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Prop
     try {
       const canceled = await request<OperationDetail>(`/api/operations/${op.id}/cancel`, 'POST');
       announce(canceled, 'cancel');
+      mutate(LOW_STOCK_KEY);
       onDone(canceled);
     } catch (err) {
       showError(err);
