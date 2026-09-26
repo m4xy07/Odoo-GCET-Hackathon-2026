@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { RiArrowDownSLine } from '@remixicon/react';
 import * as Dropdown from '@/components/ui/dropdown';
-import { AlertBell } from '@/components/alerts/alert-bell';
+import { LowStockBell } from '@/components/alerts/LowStockBell';
 import { Logo } from '@/components/shell/logo';
 import { MobileNav } from '@/components/shell/mobile-nav';
 import { ProfileMenu } from '@/components/shell/profile-menu';
@@ -73,7 +73,7 @@ export function TopBar() {
         </nav>
 
         <div className='ml-auto flex items-center gap-3'>
-          <AlertBell />
+          <LowStockBell />
           <ProfileMenu />
         </div>
       </div>

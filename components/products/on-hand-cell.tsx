@@ -5,7 +5,7 @@ import { mutate } from 'swr';
 import { RiPencilLine } from '@remixicon/react';
 import * as Button from '@/components/ui/button';
 import * as Modal from '@/components/ui/modal';
-import { LOW_STOCK_KEY } from '@/components/alerts/alert-bell';
+import { LOW_STOCK_KEY } from '@/components/alerts/LowStockBell';
 import { Field } from '@/components/auth/field';
 import { send } from '@/components/settings/request';
 import { notification } from '@/hooks/use-notification';

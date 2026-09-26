@@ -10,7 +10,7 @@ import * as Hint from '@/components/ui/hint';
 import * as Label from '@/components/ui/label';
 import * as Modal from '@/components/ui/modal';
 import * as Select from '@/components/ui/select';
-import { LOW_STOCK_KEY } from '@/components/alerts/alert-bell';
+import { LOW_STOCK_KEY } from '@/components/alerts/LowStockBell';
 import { Field } from '@/components/auth/field';
 import { ApiError, fetcher, send } from '@/components/settings/request';
 import { notification } from '@/hooks/use-notification';
