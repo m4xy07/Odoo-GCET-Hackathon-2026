@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useReducedMotion } from 'motion/react';
+import { SlowLoading } from '@/components/motion/SlowLoading';
 import { cn } from '@/utils/cn';
 
 export type Column<T> = {
@@ -114,6 +115,7 @@ export function DataTable<T>({
               ))}
         </tbody>
       </table>
+      {isLoading && !rows && <SlowLoading />}
     </div>
   );
 }
