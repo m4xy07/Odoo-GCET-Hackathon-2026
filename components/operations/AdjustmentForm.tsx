@@ -1,11 +1,13 @@
 'use client';
 
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, type Path } from 'react-hook-form';
 import { mutate } from 'swr';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
+import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
 import * as Button from '@/components/ui/button';
 import { notification } from '@/hooks/use-notification';
 import type { OperationDetail } from '@/lib/types';
@@ -28,15 +30,16 @@ export function AdjustmentForm() {
     defaultValues: { productId: '', locationId: '', reason: '' },
   });
   const { errors, isSubmitting } = formState;
+  // set once the count is saved: the check plays, then the adjustment opens
+  const [done, setDone] = React.useState<{ id: string; change: string } | null>(null);
 
   const onSubmit = handleSubmit(async (input) => {
     try {
       const op = await request<OperationDetail>('/api/stock/adjust', 'POST', input);
       const removed = op.sourceLocationId === input.locationId;
       const change = removed ? `${op.lines[0].quantity} removed from ${op.from}` : `${op.lines[0].quantity} added to ${op.to}`;
-      notification({ status: 'success', variant: 'stroke', title: `${op.reference}: ${change}` });
       mutate(`/api/operations/${op.id}`, op, { revalidate: false });
-      router.replace(`/operations/adjustments/${op.id}`);
+      setDone({ id: op.id, change });
     } catch (err) {
       if (err instanceof ApiError && err.fields) {
         for (const [field, text] of Object.entries(err.fields)) setError(field as Path<Values>, { message: text });
@@ -51,7 +54,7 @@ export function AdjustmentForm() {
 
       <div className='mt-5 flex flex-wrap items-center justify-between gap-3 border-b border-stroke-soft-200 pb-5'>
         <div className='flex flex-wrap gap-2'>
-          <Button.Root type='submit' size='small' disabled={isSubmitting}>
+          <Button.Root type='submit' size='small' disabled={isSubmitting || !!done}>
             Validate
           </Button.Root>
           <Button.Root type='button' variant='neutral' mode='stroke' size='small' onClick={() => router.push('/operations/adjustments')}>
@@ -109,6 +112,7 @@ export function AdjustmentForm() {
         />
         <Field id='reason' label='Reason' placeholder='Damaged, found, recount' error={errors.reason?.message} {...register('reason')} />
       </div>
+      <ValidateSuccess open={!!done} label={done?.change} onDone={() => done && router.replace(`/operations/adjustments/${done.id}`)} />
     </form>
   );
 }

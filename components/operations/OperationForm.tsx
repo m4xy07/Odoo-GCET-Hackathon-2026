@@ -8,6 +8,7 @@ import { RiPrinterLine } from '@remixicon/react';
 import { Controller, FormProvider, useForm, useWatch, type Path } from 'react-hook-form';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
+import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
 import * as Button from '@/components/ui/button';
 import * as Modal from '@/components/ui/modal';
 import { notification } from '@/hooks/use-notification';
@@ -25,11 +26,12 @@ type StockAction = Exclude<OperationDetail['actions'][number], 'print'>;
 
 const ACTION_LABEL = { confirm: 'To Do', check: 'Check Availability', validate: 'Validate' } as const;
 
+// Shown in the success check after Validate, which replaces the toast for that moment
 const DONE_TEXT: Record<OpType, string> = {
-  IN: 'Receipt validated, stock added',
-  OUT: 'Delivery validated, stock removed',
-  INT: 'Transfer validated, stock moved',
-  ADJ: 'Adjustment applied',
+  IN: 'Stock added',
+  OUT: 'Stock removed',
+  INT: 'Stock moved',
+  ADJ: 'Adjusted',
 };
 
 const today = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in the user's time zone
@@ -55,11 +57,8 @@ function announce(op: OperationDetail, action?: StockAction) {
       description: 'The delivery waits until stock comes in.',
     });
   }
-  const title =
-    action === 'validate' ? DONE_TEXT[op.type]
-    : action === 'cancel' ? `${op.reference} canceled`
-    : action ? `${op.reference} is ready`
-    : 'Saved';
+  if (action === 'validate') return; // the success check says it
+  const title = action === 'cancel' ? `${op.reference} canceled` : action ? `${op.reference} is ready` : 'Saved';
   notification({ status: 'success', variant: 'stroke', title });
 }
 
@@ -77,6 +76,7 @@ export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
   const { data: locations } = useStockLocations();
   const [confirmCancel, setConfirmCancel] = React.useState(false);
   const [canceling, setCanceling] = React.useState(false);
+  const [validated, setValidated] = React.useState(false);
 
   const form = useForm<FormValues, unknown, OperationInput>({
     resolver: zodResolver(operationSchema),
@@ -129,6 +129,7 @@ export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
       try {
         if (stillAllowed) saved = await request<OperationDetail>(`/api/operations/${saved.id}/${stillAllowed}`, 'POST');
         announce(saved, stillAllowed);
+        if (stillAllowed === 'validate') setValidated(true);
       } catch (err) {
         showError(err);
       }
@@ -297,6 +298,7 @@ export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
           </Modal.Footer>
         </Modal.Content>
       </Modal.Root>
+      <ValidateSuccess open={validated} onDone={() => setValidated(false)} label={DONE_TEXT[type]} />
     </FormProvider>
   );
 }
