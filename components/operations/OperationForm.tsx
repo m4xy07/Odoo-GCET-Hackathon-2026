@@ -173,7 +173,8 @@ export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Prop
           onChange={field.onChange}
           options={locationOptions}
           placeholder='Pick a location'
-          error={errors[name] && 'Pick a location'}
+          // only the generic empty-select text is reworded, real rules like From and To must be different stay
+          error={errors[name]?.message === 'Pick a valid option' ? 'Pick a location' : errors[name]?.message}
           disabled={!draft}
         />
       )}
