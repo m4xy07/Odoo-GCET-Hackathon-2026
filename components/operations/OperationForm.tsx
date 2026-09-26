@@ -10,6 +10,7 @@ import { mutate } from 'swr';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
 import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
+import { LateTag } from '@/components/lists/StatusBadge';
 import * as Button from '@/components/ui/button';
 import * as Modal from '@/components/ui/modal';
 import { notification } from '@/hooks/use-notification';
@@ -277,10 +278,11 @@ export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Prop
           <StatusStepper type={type} status={op.status} />
         </div>
 
-        <p className='mt-8 text-[22px] font-semibold leading-7 tabular-nums'>
+        <div className='mt-8 flex items-center gap-3 text-[22px] font-semibold leading-7 tabular-nums'>
           {op.reference}
-          {isNew && <span className='ml-2 text-[13px] font-normal leading-[18px] text-text-sub-600'>new</span>}
-        </p>
+          {isNew && <span className='text-[13px] font-normal leading-[18px] text-text-sub-600'>new</span>}
+          {op.isLate && <LateTag />}
+        </div>
 
         <div className='mt-5 grid grid-cols-1 gap-x-12 gap-y-5 md:grid-cols-2'>{layout[type]}</div>
 
