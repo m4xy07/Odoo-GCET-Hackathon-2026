@@ -153,7 +153,7 @@ async function checkLocations(type: OpType, sourceId: string, destId: string) {
   return warehouse;
 }
 
-async function checkProducts(lines: OperationInput['lines']) {
+export async function checkProducts(lines: OperationInput['lines']) {
   const ids = [...new Set(lines.map((l) => l.product))];
   const found = await Product.countDocuments({ _id: { $in: ids } });
   if (found !== ids.length) throw new HttpError(400, 'A product on this list no longer exists', { lines: 'Remove missing products' });
