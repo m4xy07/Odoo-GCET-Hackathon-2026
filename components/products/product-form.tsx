@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import { Controller, useForm, type Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiErrorWarningFill } from '@remixicon/react';
@@ -10,6 +10,7 @@ import * as Hint from '@/components/ui/hint';
 import * as Label from '@/components/ui/label';
 import * as Modal from '@/components/ui/modal';
 import * as Select from '@/components/ui/select';
+import { LOW_STOCK_KEY } from '@/components/alerts/alert-bell';
 import { Field } from '@/components/auth/field';
 import { ApiError, fetcher, send } from '@/components/settings/request';
 import { notification } from '@/hooks/use-notification';
@@ -70,6 +71,7 @@ function ProductForm({ product, onDone }: { product?: ProductDetail; onDone: (pr
         ? await send<ProductDetail>('PATCH', `/api/products/${product.id}`, values)
         : await send<ProductDetail>('POST', '/api/products', values);
       notification({ status: 'success', title: product ? 'Product updated' : 'Product created' });
+      mutate(LOW_STOCK_KEY); // a new reorder min or opening stock can change the bell
       onDone(saved);
     } catch (err) {
       const fields = err instanceof ApiError ? err.fields : {};

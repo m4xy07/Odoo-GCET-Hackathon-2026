@@ -1,9 +1,11 @@
 'use client';
 
 import * as React from 'react';
+import { mutate } from 'swr';
 import { RiPencilLine } from '@remixicon/react';
 import * as Button from '@/components/ui/button';
 import * as Modal from '@/components/ui/modal';
+import { LOW_STOCK_KEY } from '@/components/alerts/alert-bell';
 import { Field } from '@/components/auth/field';
 import { send } from '@/components/settings/request';
 import { notification } from '@/hooks/use-notification';
@@ -115,6 +117,7 @@ function ConfirmAdjust({ row, location, counted, onClose }: ConfirmProps) {
         reason: reason.trim() || undefined,
       });
       notification({ status: 'success', title: `Stock updated, logged as ${op.reference}` });
+      mutate(LOW_STOCK_KEY); // the bell count may have changed
       onClose(true);
     } catch (err) {
       setError((err as Error).message);
