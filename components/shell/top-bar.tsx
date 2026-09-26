@@ -13,13 +13,14 @@ import { cn } from '@/utils/cn';
 
 const itemClass = (active: boolean) =>
   cn(
-    'rounded-10 inline-flex h-9 items-center gap-1 px-3 text-[15px] leading-[22px] transition-colors duration-150',
+    'rounded-10 inline-flex h-9 items-center gap-1 px-3 text-[15px] leading-[22px] whitespace-nowrap transition-colors duration-150',
     active
       ? 'bg-bg-weak-50 text-text-strong-950 font-medium'
       : 'text-text-sub-600 hover:text-text-strong-950',
   );
 
-// The mockup top bar: nav on the left, avatar on the right. Below 768px the nav moves into the drawer.
+// The mockup top bar: nav on the left, avatar on the right. Below 1024px the five links, bell and avatar
+// do not fit in one row, so tablets and phones get the drawer instead.
 export function TopBar() {
   const pathname = usePathname();
 
@@ -31,7 +32,7 @@ export function TopBar() {
           <Logo />
         </Link>
 
-        <nav className='hidden items-center gap-1 md:flex' aria-label='Main'>
+        <nav className='hidden items-center gap-1 lg:flex' aria-label='Main'>
           {NAV.map((item) =>
             isGroup(item) ? (
               <Dropdown.Root key={item.label}>

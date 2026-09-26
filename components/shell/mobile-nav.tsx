@@ -22,9 +22,11 @@ export function MobileNav() {
       href={item.href}
       onClick={() => setOpen(false)}
       className={cn(
-        'flex h-11 items-center rounded-10 px-3 text-[15px]',
+        'rounded-10 flex h-11 items-center px-3 text-[15px]',
         indent && 'pl-6',
-        isActive(pathname, item) ? 'bg-bg-weak-50 font-medium text-text-strong-950' : 'text-text-sub-600',
+        isActive(pathname, item)
+          ? 'bg-bg-weak-50 text-text-strong-950 font-medium'
+          : 'text-text-sub-600',
       )}
     >
       {item.label}
@@ -33,13 +35,16 @@ export function MobileNav() {
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen}>
-      <Drawer.Trigger className='flex size-9 items-center justify-center rounded-10 text-text-strong-950 md:hidden' aria-label='Open menu'>
+      <Drawer.Trigger
+        className='rounded-10 text-text-strong-950 flex size-9 items-center justify-center lg:hidden'
+        aria-label='Open menu'
+      >
         <RiMenuLine className='size-5' />
       </Drawer.Trigger>
       {/* Align's drawer slides in from the right, these classes flip it to the left */}
       <Drawer.Content
         className={cn(
-          'max-w-[300px] justify-self-start border-l-0 border-r',
+          'max-w-[300px] justify-self-start border-r border-l-0',
           'data-[state=open]:slide-in-from-left-full data-[state=closed]:slide-out-to-left-full',
         )}
       >
@@ -52,19 +57,21 @@ export function MobileNav() {
           {NAV.map((item) =>
             isGroup(item) ? (
               <div key={item.label} className='mt-2'>
-                <p className='px-3 pb-1 text-[13px] font-medium uppercase tracking-wide text-text-soft-400'>{item.label}</p>
+                <p className='text-text-soft-400 px-3 pb-1 text-[13px] font-medium tracking-wide uppercase'>
+                  {item.label}
+                </p>
                 {item.children.map((child) => link(child, true))}
               </div>
             ) : (
               link(item)
             ),
           )}
-          <div className='mt-4 border-t border-stroke-soft-200 pt-4'>
+          <div className='border-stroke-soft-200 mt-4 border-t pt-4'>
             {link({ label: 'My Profile', href: '/profile' })}
             <button
               type='button'
               onClick={() => signOut({ redirectUrl: '/sign-in' })}
-              className='flex h-11 w-full items-center rounded-10 px-3 text-[15px] text-error-base'
+              className='rounded-10 text-error-base flex h-11 w-full items-center px-3 text-[15px]'
             >
               Logout
             </button>
