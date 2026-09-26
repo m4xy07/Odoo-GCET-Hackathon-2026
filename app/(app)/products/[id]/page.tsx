@@ -14,6 +14,7 @@ import { StockBadge } from '@/components/products/stock-badge';
 import { ErrorBox, TableSkeleton } from '@/components/settings/list-states';
 import { fetcher } from '@/components/settings/request';
 import { PageHeader } from '@/components/shell/page-header';
+import { reorderSuggestion } from '@/lib/services/stock-rules';
 import type { ProductDetail, ProductStockRow } from '@/lib/types';
 
 export default function ProductPage() {
@@ -46,6 +47,8 @@ export default function ProductPage() {
           >
             <StockBadge state={p.stockState} />
           </PageHeader>
+
+          {p.stockState !== 'ok' && <ReorderHint product={p} />}
 
           <dl className='mb-10 grid grid-cols-2 gap-x-6 gap-y-5 rounded-16 border border-stroke-soft-200 p-5 sm:grid-cols-4'>
             <Fact label='SKU/Code' value={p.sku} />
@@ -110,5 +113,16 @@ function Fact({ label, value }: { label: string; value: string }) {
       <dt className='text-paragraph-xs text-text-sub-600'>{label}</dt>
       <dd className='text-label-sm tabular-nums'>{value}</dd>
     </div>
+  );
+}
+
+// The reordering rule in words, so the reorder quantity on the product means something
+function ReorderHint({ product: p }: { product: ProductDetail }) {
+  const qty = reorderSuggestion(p.onHand, p.reorderMin, p.reorderQty);
+  return (
+    <p className='mb-4 rounded-16 bg-warning-lighter px-4 py-3 text-paragraph-sm text-warning-base'>
+      {p.stockState === 'out' ? 'Out of stock.' : `At or below the reorder point of ${formatQty(p.reorderMin, p.uom)}.`}
+      {qty > 0 && <span className='font-medium'> Suggested order: {formatQty(qty, p.uom)}.</span>}
+    </p>
   );
 }

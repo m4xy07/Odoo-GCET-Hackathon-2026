@@ -5,6 +5,7 @@ import Link from 'next/link';
 import useSWR from 'swr';
 import * as Dropdown from '@/components/ui/dropdown';
 import { AlertBell } from '@/components/motion/AlertBell';
+import { formatQty } from '@/components/products/format';
 import { StockBadge } from '@/components/products/stock-badge';
 import { fetcher } from '@/components/settings/request';
 import { notification } from '@/hooks/use-notification';
@@ -59,6 +60,9 @@ export function LowStockBell() {
                   <span className='block text-paragraph-xs text-text-sub-600 tabular-nums'>
                     {item.sku} · {item.onHand} on hand, min {item.reorderMin}
                   </span>
+                  {item.suggestedQty > 0 && (
+                    <span className='block text-paragraph-xs font-medium tabular-nums'>Reorder {formatQty(item.suggestedQty, item.uom)}</span>
+                  )}
                 </span>
                 <StockBadge state={item.state} />
               </Link>
