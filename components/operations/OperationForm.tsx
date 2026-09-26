@@ -66,11 +66,12 @@ type Props = {
   op: OperationDetail;
   isNew: boolean;
   onTypeChange?: (type: OpType) => void; // a new delivery can become an internal transfer
+  prefill?: { product: string; quantity: number }; // one starting line, e.g. from a low stock suggestion
   onDone: (op: OperationDetail) => void;
 };
 
 // Receipt, delivery and internal transfer share this form. Buttons come from the server's actions list.
-export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
+export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Props) {
   const router = useRouter();
   const { data: products } = useProducts();
   const { data: locations } = useStockLocations();
@@ -80,7 +81,7 @@ export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
 
   const form = useForm<FormValues, unknown, OperationInput>({
     resolver: zodResolver(operationSchema),
-    defaultValues: toValues(op, isNew),
+    defaultValues: { ...toValues(op, isNew), ...(prefill && { lines: [prefill] }) },
   });
   const { register, handleSubmit, reset, getValues, setError, formState } = form;
   const { errors, isDirty, isSubmitting } = formState;

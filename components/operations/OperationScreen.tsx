@@ -10,7 +10,9 @@ import { useBlankOperation, useOperation } from './hooks';
 import { TYPE_SLUG } from './labels';
 import { OperationForm } from './OperationForm';
 
-export function NewOperation({ type: initialType }: { type: OpType }) {
+type Prefill = { product: string; quantity: number };
+
+export function NewOperation({ type: initialType, prefill }: { type: OpType; prefill?: Prefill }) {
   const router = useRouter();
   const [type, setType] = React.useState(initialType);
   const { data, error, mutate: retry } = useBlankOperation(type);
@@ -22,6 +24,7 @@ export function NewOperation({ type: initialType }: { type: OpType }) {
       op={data}
       isNew
       onTypeChange={setType}
+      prefill={prefill}
       onDone={(saved) => {
         mutate(`/api/operations/${saved.id}`, saved, { revalidate: false }); // the next page opens without a spinner
         router.replace(`/operations/${TYPE_SLUG[saved.type]}/${saved.id}`);
