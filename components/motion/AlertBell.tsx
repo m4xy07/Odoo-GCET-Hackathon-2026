@@ -38,7 +38,9 @@ export function AlertBell({
   }, [count, player, reduceMotion]);
 
   const label =
-    count > 0 ? `Low stock alerts, ${count} items` : 'Low stock alerts, none';
+    count > 0
+      ? `Low stock alerts, ${count} ${count === 1 ? 'item' : 'items'}`
+      : 'Low stock alerts, none';
 
   return (
     <button
