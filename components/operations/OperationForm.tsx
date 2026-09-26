@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiPrinterLine } from '@remixicon/react';
-import { Controller, FormProvider, useForm, type Path } from 'react-hook-form';
+import { Controller, FormProvider, useForm, useWatch, type Path } from 'react-hook-form';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
 import * as Button from '@/components/ui/button';
@@ -93,7 +93,9 @@ export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
   }, [op, isNew, reset, getValues]);
 
   const draft = op.status === 'draft';
-  const type = op.type;
+  // Layout follows the form's own type, so switching Delivery to Internal Transfer mounts the new
+  // fields only after their values are in. A select mounted with a value it does not list clears itself.
+  const type = useWatch({ control: form.control, name: 'type' }) as OpType;
   const slug = TYPE_SLUG[type];
   const busy = isSubmitting || canceling;
   const primary = op.actions.find((a): a is keyof typeof ACTION_LABEL => a in ACTION_LABEL);
