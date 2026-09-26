@@ -6,7 +6,7 @@ import { cn } from '@/utils/cn';
 const SPRING = { type: 'spring', stiffness: 400, damping: 32 } as const;
 
 // Columns side by side, cards glide between them when their group changes (layoutId).
-// On a phone the columns scroll sideways instead of squeezing.
+// Below 1024px the columns scroll sideways instead of squeezing, from 1024px they share the width.
 export function KanbanBoard<T>({
   columns,
   rows,
@@ -33,7 +33,7 @@ export function KanbanBoard<T>({
             <section
               key={col.key}
               aria-label={col.label}
-              className='rounded-16 bg-bg-weak-50 flex w-64 shrink-0 snap-start flex-col gap-2 p-2'
+              className='rounded-16 bg-bg-weak-50 flex w-64 shrink-0 snap-start flex-col gap-2 p-2 lg:w-auto lg:min-w-0 lg:flex-1'
             >
               <h2 className='text-text-sub-600 flex items-center justify-between px-2 pt-1 text-[13px] font-medium'>
                 {col.label}
