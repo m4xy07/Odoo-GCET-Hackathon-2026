@@ -7,7 +7,7 @@ export type Column<T> = {
   key: string;
   header: string;
   cell: (row: T) => React.ReactNode;
-  // low value columns (Contact, Date) drop out under 640px so the table fits a phone
+  // columns that drop out under 640px so the table fits a phone (Reference, Quantity and Status stay)
   hideOnMobile?: boolean;
   className?: string;
 };

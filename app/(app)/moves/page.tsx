@@ -59,8 +59,8 @@ const columns: Column<MoveRow>[] = [
     cell: (m) => m.contact,
     hideOnMobile: true,
   },
-  { key: 'from', header: 'From', cell: (m) => m.from },
-  { key: 'to', header: 'To', cell: (m) => m.to },
+  { key: 'from', header: 'From', cell: (m) => m.from, hideOnMobile: true },
+  { key: 'to', header: 'To', cell: (m) => m.to, hideOnMobile: true },
   {
     key: 'quantity',
     header: 'Quantity',

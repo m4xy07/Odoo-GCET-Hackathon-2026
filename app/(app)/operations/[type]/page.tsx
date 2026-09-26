@@ -39,7 +39,7 @@ const PAGES: Record<
   },
   deliveries: {
     type: 'OUT',
-    title: 'Delivery',
+    title: 'Deliveries',
     noun: 'deliveries',
     statuses: ['draft', 'waiting', 'ready', 'done', 'canceled'],
   },
@@ -86,8 +86,8 @@ const columns: Column<OperationRow>[] = [
       </span>
     ),
   },
-  { key: 'from', header: 'From', cell: (op) => op.from },
-  { key: 'to', header: 'To', cell: (op) => op.to },
+  { key: 'from', header: 'From', cell: (op) => op.from, hideOnMobile: true },
+  { key: 'to', header: 'To', cell: (op) => op.to, hideOnMobile: true },
   {
     key: 'contact',
     header: 'Contact',
