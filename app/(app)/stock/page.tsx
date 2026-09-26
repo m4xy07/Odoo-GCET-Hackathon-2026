@@ -3,11 +3,13 @@
 import * as React from 'react';
 import Link from 'next/link';
 import useSWR from 'swr';
-import { RiSearchLine } from '@remixicon/react';
+import { RiDownloadLine, RiSearchLine } from '@remixicon/react';
+import * as Button from '@/components/ui/button';
 import * as Input from '@/components/ui/input';
 import * as Select from '@/components/ui/select';
 import * as Table from '@/components/ui/table';
 import { EmptyState } from '@/components/motion/EmptyState';
+import { downloadCsv } from '@/components/products/csv';
 import { formatCost } from '@/components/products/format';
 import { OnHandCell } from '@/components/products/on-hand-cell';
 import { StockBadge } from '@/components/products/stock-badge';
@@ -46,6 +48,15 @@ export default function StockPage() {
     keepPreviousData: true,
   });
 
+  // exactly the rows on screen, with the location they belong to
+  function exportCsv() {
+    const where = location?.fullName ?? 'All locations';
+    const header = ['Product', 'SKU', 'per unit cost', 'On hand', 'free to Use', 'Location'];
+    const rows = (data ?? []).map((r) => [r.name, r.sku, r.unitCost, r.onHand, r.freeToUse, where]);
+    const date = new Date().toISOString().slice(0, 10);
+    downloadCsv(`stock-${where.replace(/\W+/g, '-')}-${date}.csv`, [header, ...rows]);
+  }
+
   return (
     <>
       <PageHeader title='Stock'>
@@ -81,6 +92,10 @@ export default function StockPage() {
             ))}
           </Select.Content>
         </Select.Root>
+        <Button.Root variant='neutral' mode='stroke' size='small' onClick={exportCsv} disabled={!data?.length} aria-label='Export CSV'>
+          <Button.Icon as={RiDownloadLine} />
+          <span className='hidden sm:inline'>Export CSV</span>
+        </Button.Root>
       </PageHeader>
 
       <Subtitle>
