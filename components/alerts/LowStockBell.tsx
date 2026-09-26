@@ -12,6 +12,9 @@ import { notification } from '@/hooks/use-notification';
 import type { LowStockItem } from '@/lib/types';
 
 export const LOW_STOCK_KEY = '/api/alerts/low-stock';
+
+// the receipt form opens with this one line filled in, the user adds Receive From and presses To Do
+export const receiptLink = (productId: string, qty: number) => `/operations/receipts/new?product=${productId}&qty=${qty}`;
 const TOASTED = 'stocksense.lowStockToast';
 
 // Top bar low stock alerts: count on the bell, the list on click and one warning toast per browser session.
@@ -53,20 +56,25 @@ export function LowStockBell() {
         {items.length === 0 && <p className='px-2 py-5 text-center text-paragraph-sm text-text-sub-600'>All stocked up.</p>}
         <div className='max-h-80 overflow-y-auto'>
           {items.map((item) => (
-            <Dropdown.Item key={item.productId} asChild className='justify-between gap-3'>
-              <Link href={`/products/${item.productId}`}>
-                <span className='min-w-0'>
-                  <span className='block truncate text-label-sm'>{item.name}</span>
-                  <span className='block text-paragraph-xs text-text-sub-600 tabular-nums'>
-                    {item.sku} · {item.onHand} on hand, min {item.reorderMin}
+            <React.Fragment key={item.productId}>
+              <Dropdown.Item asChild className='justify-between gap-3'>
+                <Link href={`/products/${item.productId}`}>
+                  <span className='min-w-0'>
+                    <span className='block truncate text-label-sm'>{item.name}</span>
+                    <span className='block text-paragraph-xs text-text-sub-600 tabular-nums'>
+                      {item.sku} · {item.onHand} on hand, min {item.reorderMin}
+                    </span>
                   </span>
-                  {item.suggestedQty > 0 && (
-                    <span className='block text-paragraph-xs font-medium tabular-nums'>Reorder {formatQty(item.suggestedQty, item.uom)}</span>
-                  )}
-                </span>
-                <StockBadge state={item.state} />
-              </Link>
-            </Dropdown.Item>
+                  <StockBadge state={item.state} />
+                </Link>
+              </Dropdown.Item>
+              {/* its own item, a link inside the product link would not be valid */}
+              {item.suggestedQty > 0 && (
+                <Dropdown.Item asChild className='-mt-1 py-1 pl-2 text-paragraph-xs text-primary-base tabular-nums'>
+                  <Link href={receiptLink(item.productId, item.suggestedQty)}>Create receipt for {formatQty(item.suggestedQty, item.uom)}</Link>
+                </Dropdown.Item>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </Dropdown.Content>

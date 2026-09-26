@@ -9,6 +9,7 @@ import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
 import { EmptyState } from '@/components/motion/EmptyState';
 import { formatCost, formatQty, UOM_LABEL } from '@/components/products/format';
+import { receiptLink } from '@/components/alerts/LowStockBell';
 import { ProductFormModal } from '@/components/products/product-form';
 import { StockBadge } from '@/components/products/stock-badge';
 import { ErrorBox, TableSkeleton } from '@/components/settings/list-states';
@@ -122,7 +123,14 @@ function ReorderHint({ product: p }: { product: ProductDetail }) {
   return (
     <p className='mb-4 rounded-16 bg-warning-lighter px-4 py-3 text-paragraph-sm text-warning-base'>
       {p.stockState === 'out' ? 'Out of stock.' : `At or below the reorder point of ${formatQty(p.reorderMin, p.uom)}.`}
-      {qty > 0 && <span className='font-medium'> Suggested order: {formatQty(qty, p.uom)}.</span>}
+      {qty > 0 && (
+        <>
+          <span className='font-medium'> Suggested order: {formatQty(qty, p.uom)}.</span>{' '}
+          <Link href={receiptLink(p.id, qty)} className='font-medium text-primary-base hover:underline'>
+            Create receipt
+          </Link>
+        </>
+      )}
     </p>
   );
 }
