@@ -2,7 +2,7 @@ import { isValidObjectId, Types } from 'mongoose';
 import { HttpError } from '@/lib/api';
 import { connectDB } from '@/lib/db';
 import { adjustStock } from '@/lib/services/inventory';
-import type { ProductDetail, ProductRow, ProductStockRow, StockRow } from '@/lib/types';
+import type { LowStockItem, ProductDetail, ProductRow, ProductStockRow, StockRow } from '@/lib/types';
 import type { CategoryInput, LocationInput, ProductInput, WarehouseInput } from '@/lib/validators';
 import { Category } from '@/models/Category';
 import { Location } from '@/models/Location';
@@ -315,6 +315,24 @@ export async function archiveProduct(id: string) {
   const product = await Product.findByIdAndUpdate(id, { active: false }).lean();
   if (!product) throw new HttpError(404, 'Product not found');
   return { id };
+}
+
+// ---- alerts ----
+
+// Same rule as the badges: out at 0, low at or below the reorder point. Out of stock first.
+export async function listLowStock(): Promise<LowStockItem[]> {
+  const products = await listProducts();
+  return products
+    .filter((p) => p.stockState !== 'ok')
+    .sort((a, b) => Number(b.stockState === 'out') - Number(a.stockState === 'out') || a.name.localeCompare(b.name))
+    .map((p) => ({
+      productId: p.id,
+      name: p.name,
+      sku: p.sku,
+      onHand: p.onHand,
+      reorderMin: p.reorderMin,
+      state: p.stockState as LowStockItem['state'],
+    }));
 }
 
 // ---- stock page ----
