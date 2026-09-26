@@ -6,7 +6,9 @@ import { RiAddLine } from '@remixicon/react';
 import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
 import { DeleteConfirm } from '@/components/settings/delete-confirm';
-import { EmptyBox, ErrorBox, PageHeader, RowActions, TableSkeleton } from '@/components/settings/list-states';
+import { EmptyState } from '@/components/motion/EmptyState';
+import { ErrorBox, RowActions, Subtitle, TableSkeleton } from '@/components/settings/list-states';
+import { PageHeader } from '@/components/shell/page-header';
 import { fetcher, send } from '@/components/settings/request';
 import { WarehouseFormModal } from '@/components/settings/warehouse-form';
 import type { WarehouseRow } from '@/lib/services/catalog';
@@ -31,12 +33,13 @@ export default function WarehousesPage() {
 
   return (
     <>
-      <PageHeader title='Warehouse' subtitle='Warehouse details and the short code used in every reference.' action={newButton} />
+      <PageHeader title='Warehouse' action={newButton} />
+      <Subtitle>Warehouse details and the short code used in every reference.</Subtitle>
 
       {isLoading && <TableSkeleton />}
       {error && <ErrorBox message={error.message} onRetry={() => mutate()} />}
       {data?.length === 0 && (
-        <EmptyBox title='No warehouses yet' text='Add your first warehouse, then give it locations like Stock1 or Rack A.' action={newButton} />
+        <EmptyState title='No warehouses yet' description='Add your first warehouse, then give it locations like Stock1 or Rack A.' action={newButton} />
       )}
 
       {!!data?.length && (

@@ -11,16 +11,6 @@ export function TableSkeleton({ rows = 3 }: { rows?: number }) {
   );
 }
 
-export function EmptyBox({ title, text, action }: { title: string; text: string; action?: React.ReactNode }) {
-  return (
-    <div className='flex flex-col items-center gap-2 rounded-16 border border-stroke-soft-200 px-6 py-12 text-center'>
-      <p className='text-label-md text-text-strong-950'>{title}</p>
-      <p className='max-w-sm text-paragraph-sm text-text-sub-600'>{text}</p>
-      {action && <div className='mt-3'>{action}</div>}
-    </div>
-  );
-}
-
 export function ErrorBox({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className='flex flex-col items-start gap-3 rounded-16 border border-stroke-soft-200 p-5 sm:flex-row sm:items-center sm:justify-between'>
@@ -28,19 +18,6 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry: () =>
       <Button.Root variant='neutral' mode='stroke' size='small' onClick={onRetry}>
         Try again
       </Button.Root>
-    </div>
-  );
-}
-
-// Title with the one primary action right beside it, top left like the mockup
-export function PageHeader({ title, subtitle, action }: { title: string; subtitle: string; action?: React.ReactNode }) {
-  return (
-    <div className='mb-6 flex flex-col gap-1 md:mb-8'>
-      <div className='flex items-center gap-4'>
-        <h1 className='text-[28px] font-semibold leading-[34px] tracking-tight'>{title}</h1>
-        {action}
-      </div>
-      <p className='text-paragraph-sm text-text-sub-600'>{subtitle}</p>
     </div>
   );
 }
@@ -56,4 +33,9 @@ export function RowActions({ label, onEdit, onDelete }: { label: string; onEdit:
       </Button.Root>
     </div>
   );
+}
+
+// One line under the page title saying what the page holds
+export function Subtitle({ children }: { children: React.ReactNode }) {
+  return <p className='-mt-3 mb-5 text-paragraph-sm text-text-sub-600 md:-mt-5 md:mb-6'>{children}</p>;
 }

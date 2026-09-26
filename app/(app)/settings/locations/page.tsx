@@ -7,7 +7,9 @@ import { RiAddLine } from '@remixicon/react';
 import * as Button from '@/components/ui/button';
 import * as Table from '@/components/ui/table';
 import { DeleteConfirm } from '@/components/settings/delete-confirm';
-import { EmptyBox, ErrorBox, PageHeader, RowActions, TableSkeleton } from '@/components/settings/list-states';
+import { EmptyState } from '@/components/motion/EmptyState';
+import { ErrorBox, RowActions, Subtitle, TableSkeleton } from '@/components/settings/list-states';
+import { PageHeader } from '@/components/shell/page-header';
 import { LocationFormModal } from '@/components/settings/location-form';
 import { fetcher, send } from '@/components/settings/request';
 import type { LocationRow, WarehouseRow } from '@/lib/services/catalog';
@@ -38,7 +40,8 @@ export default function LocationsPage() {
 
   return (
     <>
-      <PageHeader title='Location' subtitle='The rooms, racks and areas inside each warehouse.' action={newButton} />
+      <PageHeader title='Location' action={newButton} />
+      <Subtitle>The rooms, racks and areas inside each warehouse.</Subtitle>
 
       {(isLoading || warehouses.isLoading) && <TableSkeleton />}
       {(error || warehouses.error) && (
@@ -51,9 +54,9 @@ export default function LocationsPage() {
         />
       )}
       {noWarehouse && (
-        <EmptyBox
+        <EmptyState
           title='Add a warehouse first'
-          text='Every location belongs to a warehouse, and its short code starts the location name.'
+          description='Every location belongs to a warehouse, and its short code starts the location name.'
           action={
             <Button.Root size='small' asChild>
               <Link href='/settings/warehouses'>Go to Warehouse</Link>
@@ -62,7 +65,7 @@ export default function LocationsPage() {
         />
       )}
       {!noWarehouse && data?.length === 0 && (
-        <EmptyBox title='No locations yet' text='Add places where stock sits, like Stock1, Rack A or Production.' action={newButton} />
+        <EmptyState title='No locations yet' description='Add places where stock sits, like Stock1, Rack A or Production.' action={newButton} />
       )}
 
       {!!data?.length && (
