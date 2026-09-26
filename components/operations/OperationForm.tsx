@@ -163,7 +163,7 @@ export function OperationForm({ op, isNew, onTypeChange, onDone }: Props) {
           onChange={field.onChange}
           options={locationOptions}
           placeholder='Pick a location'
-          error={errors[name]?.message}
+          error={errors[name] && 'Pick a location'}
           disabled={!draft}
         />
       )}

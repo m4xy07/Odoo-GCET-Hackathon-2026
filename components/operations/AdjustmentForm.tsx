@@ -96,7 +96,7 @@ export function AdjustmentForm() {
               onChange={field.onChange}
               options={(products ?? []).map((p) => ({ value: p.id, label: productLabel(p) }))}
               placeholder='Pick a product'
-              error={errors.productId?.message}
+              error={errors.productId && 'Pick a product'}
             />
           )}
         />
@@ -111,7 +111,7 @@ export function AdjustmentForm() {
               onChange={field.onChange}
               options={(locations ?? []).map((l) => ({ value: l.id, label: l.fullName }))}
               placeholder='Pick a location'
-              error={errors.locationId?.message}
+              error={errors.locationId && 'Pick a location'}
             />
           )}
         />
@@ -125,7 +125,8 @@ export function AdjustmentForm() {
             min='0'
             inputMode='decimal'
             className='tabular-nums'
-            error={errors.countedQty?.message}
+            // an empty box reaches zod as undefined, whose own message is not meant for people
+            error={errors.countedQty && (errors.countedQty.type === 'invalid_type' ? 'Enter the quantity you counted' : errors.countedQty.message)}
             {...register('countedQty', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
           />
           {preview && !errors.countedQty && (

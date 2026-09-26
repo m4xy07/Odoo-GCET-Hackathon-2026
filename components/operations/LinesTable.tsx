@@ -87,7 +87,7 @@ export function LinesTable({ products, savedLines, from, lockProducts, readOnly 
                       Only {line.freeToUse} free in {from}
                     </p>
                   )}
-                  <ErrorText message={errors?.[i]?.product?.message} />
+                  <ErrorText message={errors?.[i]?.product && 'Pick a product'} />
                 </td>
                 <td className='py-3 text-right'>
                   {readOnly ? (
