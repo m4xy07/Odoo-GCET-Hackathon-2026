@@ -13,6 +13,7 @@ const geistMono = localFont({
   src: './fonts/GeistMono[wght].woff2',
   variable: '--font-geist-mono',
   weight: '100 900',
+  preload: false, // only used for codes and numbers, not worth blocking first paint
 });
 
 export const metadata: Metadata = {
