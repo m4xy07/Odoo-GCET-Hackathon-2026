@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+// bundled instead of fetched: nothing to wait for when it opens, and no aborted request on unmount
+import loadingAnimation from '@/public/lottie/loading.json';
 
 const DELAY_MS = 600;
 
@@ -21,7 +23,7 @@ export function SlowLoading() {
       className='text-text-sub-600 flex items-center justify-center gap-2 py-4 text-[13px]'
     >
       <DotLottieReact
-        src='/lottie/loading.json'
+        data={loadingAnimation}
         autoplay
         loop
         className='size-6'

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+// bundled instead of fetched: nothing to wait for when it opens, and no aborted request on unmount
+import successAnimation from '@/public/lottie/success.json';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { RiCheckboxCircleLine } from '@remixicon/react';
 
@@ -62,7 +64,7 @@ function SuccessMark({ label, onDone }: { label: string; onDone: () => void }) {
           <RiCheckboxCircleLine className='text-success-base size-24' />
         ) : (
           <DotLottieReact
-            src='/lottie/success.json'
+            data={successAnimation}
             autoplay
             className='size-24'
           />

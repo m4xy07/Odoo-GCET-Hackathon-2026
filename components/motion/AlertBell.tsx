@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { DotLottieReact, type DotLottie } from '@lottiefiles/dotlottie-react';
+// bundled instead of fetched: nothing to wait for when it opens, and no aborted request on unmount
+import bellAnimation from '@/public/lottie/bell.json';
 import { useReducedMotion } from 'motion/react';
 import { cn } from '@/utils/cn';
 
@@ -55,7 +57,7 @@ export function AlertBell({
       {...rest}
     >
       <DotLottieReact
-        src='/lottie/bell.json'
+        data={bellAnimation}
         className='size-7'
         dotLottieRefCallback={setPlayer}
       />
