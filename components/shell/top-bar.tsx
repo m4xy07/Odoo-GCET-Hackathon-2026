@@ -7,6 +7,7 @@ import * as Dropdown from '@/components/ui/dropdown';
 import { LowStockBell } from '@/components/alerts/LowStockBell';
 import { Logo } from '@/components/shell/logo';
 import { MobileNav } from '@/components/shell/mobile-nav';
+import { OfflineBanner } from '@/components/shell/offline-banner';
 import { ProfileMenu } from '@/components/shell/profile-menu';
 import { NAV, isActive, isGroup } from '@/components/shell/nav';
 import { cn } from '@/utils/cn';
@@ -78,6 +79,8 @@ export function TopBar() {
           <ProfileMenu />
         </div>
       </div>
+      {/* inside the sticky header so it stays in view while scrolling a long form */}
+      <OfflineBanner />
     </header>
   );
 }
