@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm, type Path } from 'react-hook-form';
@@ -24,16 +23,11 @@ export function AdjustmentForm() {
   const router = useRouter();
   const { data: products } = useProducts();
   const { data: locations } = useStockLocations();
-  const { control, register, handleSubmit, setError, setValue, getValues, formState } = useForm<Values, unknown, AdjustInput>({
+  const { control, register, handleSubmit, setError, formState } = useForm<Values, unknown, AdjustInput>({
     resolver: zodResolver(adjustSchema),
     defaultValues: { productId: '', locationId: '', reason: '' },
   });
   const { errors, isSubmitting } = formState;
-
-  // most counts happen in the main stock room, so start there
-  React.useEffect(() => {
-    if (locations?.[0] && !getValues('locationId')) setValue('locationId', locations[0].id);
-  }, [locations, getValues, setValue]);
 
   const onSubmit = handleSubmit(async (input) => {
     try {
