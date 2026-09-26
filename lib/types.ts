@@ -79,6 +79,8 @@ export type LowStockItem = {
   onHand: number;
   reorderMin: number;
   state: 'low' | 'out';
+  uom: string;
+  suggestedQty: number; // what to order to get back above the reorder point, 0 if nothing
 };
 
 export type DashboardData = {

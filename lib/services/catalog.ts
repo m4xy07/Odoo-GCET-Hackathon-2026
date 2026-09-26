@@ -2,6 +2,7 @@ import { isValidObjectId, Types } from 'mongoose';
 import { HttpError } from '@/lib/api';
 import { connectDB } from '@/lib/db';
 import { adjustStock } from '@/lib/services/inventory';
+import { reorderSuggestion, stockState } from '@/lib/services/stock-rules';
 import type { LowStockItem, ProductDetail, ProductRow, ProductStockRow, StockRow } from '@/lib/types';
 import type { CategoryInput, LocationInput, ProductInput, WarehouseInput } from '@/lib/validators';
 import { Category } from '@/models/Category';
@@ -184,11 +185,8 @@ export async function createCategory(input: CategoryInput): Promise<CategoryRow>
 
 // ---- products ----
 
-// out = nothing on hand, low = at or below the reorder point
-export function stockState(onHand: number, reorderMin: number): ProductRow['stockState'] {
-  if (onHand <= 0) return 'out';
-  return onHand <= reorderMin ? 'low' : 'ok';
-}
+// the dashboard imports stockState from here
+export { stockState };
 
 // Totals over every location. Quants only ever exist for internal locations.
 async function stockTotals(productIds: unknown[], where: Record<string, unknown> = {}) {
@@ -236,7 +234,7 @@ function toProductDetail(p: ProductDoc, total?: { onHand: number; reserved: numb
 
 export type ProductFilters = { q?: string; category?: string; state?: ProductRow['stockState'] };
 
-export async function listProducts(filters: ProductFilters = {}): Promise<ProductRow[]> {
+export async function listProducts(filters: ProductFilters = {}): Promise<ProductDetail[]> {
   await connectDB();
   const query: Record<string, unknown> = { active: true };
   if (filters.q?.trim()) {
@@ -332,6 +330,8 @@ export async function listLowStock(): Promise<LowStockItem[]> {
       onHand: p.onHand,
       reorderMin: p.reorderMin,
       state: p.stockState as LowStockItem['state'],
+      uom: p.uom,
+      suggestedQty: reorderSuggestion(p.onHand, p.reorderMin, p.reorderQty),
     }));
 }
 
