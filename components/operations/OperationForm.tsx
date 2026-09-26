@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RiPrinterLine } from '@remixicon/react';
 import { Controller, FormProvider, useForm, useWatch, type Path } from 'react-hook-form';
+import { mutate } from 'swr';
 import type { z } from 'zod';
 import { Field } from '@/components/auth/field';
 import { ValidateSuccess } from '@/components/motion/ValidateSuccess';
@@ -108,6 +109,8 @@ export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Prop
       for (const [field, text] of Object.entries(err.fields)) setError(field as Path<FormValues>, { message: text });
     }
     notification({ status: 'error', variant: 'stroke', title: message });
+    // 409 means the document moved on, often in another tab: reload it so the buttons match the server again
+    if (err instanceof ApiError && err.status === 409 && !isNew) mutate(`/api/operations/${op.id}`);
   }
 
   async function save(input: OperationInput) {
@@ -134,7 +137,7 @@ export function OperationForm({ op, isNew, onTypeChange, prefill, onDone }: Prop
       } catch (err) {
         showError(err);
       }
-      onDone(saved);
+      if (saved !== op) onDone(saved); // a failed action on an unchanged form must not overwrite the reload
     })();
 
   async function cancel() {
