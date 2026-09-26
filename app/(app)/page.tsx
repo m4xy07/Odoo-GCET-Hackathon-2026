@@ -12,11 +12,23 @@ import {
 } from '@/components/dashboard/FilterBar';
 import { KpiRow } from '@/components/dashboard/KpiRow';
 import { OperationsCard } from '@/components/dashboard/OperationsCard';
+import { MoveTrend } from '@/components/dashboard/MoveTrend';
 import { RecentMoves } from '@/components/dashboard/RecentMoves';
 import { FadeUp } from '@/components/motion/FadeUp';
 import { SlowLoading } from '@/components/motion/SlowLoading';
 import { fetcher } from '@/lib/fetcher';
 import type { DashboardData } from '@/lib/types';
+import type { MoveTrendDay } from '@/lib/services/dashboard';
+
+// the trend only follows the warehouse or location filter, type and status do not apply to ledger lines
+const trendQuery = (f: DashboardFilters) =>
+  new URLSearchParams(
+    f.place.startsWith('wh:')
+      ? { warehouse: f.place.slice(3) }
+      : f.place.startsWith('loc:')
+        ? { location: f.place.slice(4) }
+        : {},
+  ).toString();
 
 function Skeleton() {
   return (
@@ -42,6 +54,11 @@ export default function DashboardPage() {
   const [filters, setFilters] = useState<DashboardFilters>(NO_FILTERS);
   const { data, error, mutate } = useSWR<DashboardData>(
     `/api/dashboard?${toQuery(filters)}`,
+    fetcher,
+    { keepPreviousData: true },
+  );
+  const { data: trend } = useSWR<MoveTrendDay[]>(
+    `/api/dashboard/trend?${trendQuery(filters)}`,
     fetcher,
     { keepPreviousData: true },
   );
@@ -119,6 +136,7 @@ export default function DashboardPage() {
               />
             </div>
             <KpiRow kpis={data.kpis} />
+            {trend && <MoveTrend days={trend} />}
             <RecentMoves moves={data.recent} />
           </>
         )}
