@@ -17,7 +17,7 @@ The live app starts with a warehouse `WH`, three furniture products and a few re
 3. **Operations → Receipts → New:** receive 100 kg from "Azure Interior", press **To Do**, then **Validate**. Stock goes up and the receipt can be printed.
 4. **Operations → Internal Transfers → New:** move 40 kg from `WH/Stock1` to `WH/Stock2`. The total stays 100 kg.
 5. **Operations → Deliveries → New:** deliver 120 kg. Only 60 kg are free in Stock1, so the line turns red and the delivery waits. Change it to 20 kg, save, and validate.
-6. **The bell** lists Chair as low. "Create receipt for 40" opens a filled receipt; validate it and the waiting Chair delivery moves to Ready on its own.
+6. **The bell** lists Chair as low. "Create receipt for 40" opens a receipt with Chair and 40 already on it. Add the vendor ("Wood Corner"), press **To Do** and **Validate**, and the waiting Chair delivery `WH/OUT/0002` moves to Ready on its own.
 7. **Operations → Adjustments → New:** Steel Rods at `WH/Stock1`, counted 37. The 3 kg difference is logged as damaged.
 8. **Move History:** every step above as ledger lines, incoming green, outgoing red. Steel Rods adds up to 77 kg, and the dashboard counts match.
 
