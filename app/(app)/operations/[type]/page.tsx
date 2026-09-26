@@ -23,6 +23,7 @@ import {
   StatusBadge,
 } from '@/components/lists/StatusBadge';
 import { formatDate } from '@/components/lists/format';
+import { FadeUp } from '@/components/motion/FadeUp';
 import { EmptyState } from '@/components/motion/EmptyState';
 import { fetcher } from '@/lib/fetcher';
 import type { OperationRow, OpStatus, OpType } from '@/lib/types';
@@ -146,7 +147,7 @@ export default function OperationsListPage() {
   );
 
   return (
-    <>
+    <FadeUp>
       <PageHeader
         title={page.title}
         action={
@@ -224,6 +225,6 @@ export default function OperationsListPage() {
           </AnimatePresence>
         )}
       </div>
-    </>
+    </FadeUp>
   );
 }

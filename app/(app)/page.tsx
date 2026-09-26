@@ -13,6 +13,8 @@ import {
 import { KpiRow } from '@/components/dashboard/KpiRow';
 import { OperationsCard } from '@/components/dashboard/OperationsCard';
 import { RecentMoves } from '@/components/dashboard/RecentMoves';
+import { FadeUp } from '@/components/motion/FadeUp';
+import { SlowLoading } from '@/components/motion/SlowLoading';
 import { fetcher } from '@/lib/fetcher';
 import type { DashboardData } from '@/lib/types';
 
@@ -31,6 +33,7 @@ function Skeleton() {
           />
         ))}
       </div>
+      <SlowLoading />
     </div>
   );
 }
@@ -44,7 +47,7 @@ export default function DashboardPage() {
   );
 
   return (
-    <>
+    <FadeUp>
       <PageHeader title='Dashboard' />
       <div className='flex flex-col gap-6'>
         <FilterBar filters={filters} onChange={setFilters} />
@@ -120,6 +123,6 @@ export default function DashboardPage() {
           </>
         )}
       </div>
-    </>
+    </FadeUp>
   );
 }

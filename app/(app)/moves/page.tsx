@@ -12,6 +12,7 @@ import { SearchBar } from '@/components/lists/SearchBar';
 import { StatusBadge } from '@/components/lists/StatusBadge';
 import { ViewToggle, type ListView } from '@/components/lists/ViewToggle';
 import { formatDate } from '@/components/lists/format';
+import { FadeUp } from '@/components/motion/FadeUp';
 import { EmptyState } from '@/components/motion/EmptyState';
 import { fetcher } from '@/lib/fetcher';
 import type { MoveRow } from '@/lib/types';
@@ -116,7 +117,7 @@ export default function MoveHistoryPage() {
   );
 
   return (
-    <>
+    <FadeUp>
       <PageHeader title='Move History' action={<NewOperationMenu />}>
         <SearchBar
           onSearch={setQuery}
@@ -170,6 +171,6 @@ export default function MoveHistoryPage() {
           </AnimatePresence>
         )}
       </div>
-    </>
+    </FadeUp>
   );
 }
