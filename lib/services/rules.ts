@@ -53,8 +53,11 @@ export function moveDirection(type: OpType, toInternal: boolean): MoveRow['direc
   return type === 'IN' ? 'in' : 'out';
 }
 
-export function isLate(scheduledDate: Date, status: OpStatus, now = new Date()) {
-  const startOfToday = new Date(now);
-  startOfToday.setHours(0, 0, 0, 0);
-  return scheduledDate < startOfToday && status !== 'done' && status !== 'canceled';
+export function startOfToday(now = new Date()) {
+  const day = new Date(now);
+  day.setHours(0, 0, 0, 0);
+  return day;
 }
+
+export const isLate = (scheduledDate: Date, status: OpStatus, now = new Date()) =>
+  scheduledDate < startOfToday(now) && status !== 'done' && status !== 'canceled';
