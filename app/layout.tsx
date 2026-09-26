@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import './globals.css';
@@ -23,8 +24,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang='en' className={cn(inter.variable, geistMono.variable, 'antialiased')}>
       <body className='bg-bg-white-0 font-sans text-text-strong-950'>
-        <TooltipProvider>{children}</TooltipProvider>
-        <NotificationProvider />
+        <ClerkProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+          <NotificationProvider />
+        </ClerkProvider>
       </body>
     </html>
   );
