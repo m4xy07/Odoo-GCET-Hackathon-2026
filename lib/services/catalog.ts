@@ -1,8 +1,8 @@
-import { isValidObjectId } from 'mongoose';
+import { isValidObjectId, Types } from 'mongoose';
 import { HttpError } from '@/lib/api';
 import { connectDB } from '@/lib/db';
 import { adjustStock } from '@/lib/services/inventory';
-import type { ProductDetail, ProductRow, ProductStockRow } from '@/lib/types';
+import type { ProductDetail, ProductRow, ProductStockRow, StockRow } from '@/lib/types';
 import type { CategoryInput, LocationInput, ProductInput, WarehouseInput } from '@/lib/validators';
 import { Category } from '@/models/Category';
 import { Location } from '@/models/Location';
@@ -191,9 +191,9 @@ export function stockState(onHand: number, reorderMin: number): ProductRow['stoc
 }
 
 // Totals over every location. Quants only ever exist for internal locations.
-async function stockTotals(productIds: unknown[]) {
+async function stockTotals(productIds: unknown[], where: Record<string, unknown> = {}) {
   const rows = await StockQuant.aggregate<{ _id: unknown; onHand: number; reserved: number }>([
-    { $match: { product: { $in: productIds } } },
+    { $match: { product: { $in: productIds }, ...where } },
     { $group: { _id: '$product', onHand: { $sum: '$quantity' }, reserved: { $sum: '$reserved' } } },
   ]);
   return new Map(rows.map((r) => [String(r._id), r]));
@@ -315,6 +315,39 @@ export async function archiveProduct(id: string) {
   const product = await Product.findByIdAndUpdate(id, { active: false }).lean();
   if (!product) throw new HttpError(404, 'Product not found');
   return { id };
+}
+
+// ---- stock page ----
+
+export type StockFilters = { warehouse?: string; location?: string; category?: string; q?: string };
+
+// One row per product. With a location the numbers are that location's, otherwise the sum over the
+// warehouse (or everything). Products with nothing there still show, so their count can be set.
+export async function listStock(filters: StockFilters = {}): Promise<StockRow[]> {
+  const products = await listProducts({ q: filters.q, category: filters.category });
+
+  let where: Record<string, unknown> | null = null;
+  if (filters.location && isValidObjectId(filters.location)) where = { location: new Types.ObjectId(filters.location) };
+  else if (filters.warehouse && isValidObjectId(filters.warehouse)) {
+    const ids = await Location.find({ warehouse: filters.warehouse, type: 'internal' }).distinct('_id');
+    where = { location: { $in: ids } };
+  }
+  // no filter means the product totals listProducts already has
+  const here = where ? await stockTotals(products.map((p) => new Types.ObjectId(p.id)), where) : null;
+
+  return products.map((p) => {
+    const total = here?.get(p.id);
+    const onHand = here ? (total?.onHand ?? 0) : p.onHand;
+    return {
+      productId: p.id,
+      name: p.name,
+      sku: p.sku,
+      unitCost: p.unitCost,
+      onHand,
+      freeToUse: here ? onHand - (total?.reserved ?? 0) : p.freeToUse,
+      stockState: p.stockState, // low or out is about the product as a whole, not one shelf
+    };
+  });
 }
 
 export async function getProductStock(id: string): Promise<ProductStockRow[]> {
