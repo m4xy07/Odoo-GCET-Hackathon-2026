@@ -95,7 +95,7 @@ function ProductForm({ product, onDone }: { product?: ProductDetail; onDone: (pr
               <CategoryPicker id='p-category' value={field.value} onChange={field.onChange} hasError={!!errors.category} />
             )}
           />
-          <FieldError message={errors.category?.message} />
+          <FieldError message={errors.category && 'Pick a category'} />
         </div>
 
         <div className='flex flex-col gap-1'>
@@ -219,7 +219,7 @@ function OpeningStock({ control, register, errors, onRemove }: OpeningStockProps
               </Select.Root>
             )}
           />
-          <FieldError message={errors.initialStock?.locationId?.message} />
+          <FieldError message={errors.initialStock?.locationId && 'Pick a location'} />
         </div>
         <Field
           id='p-initial'

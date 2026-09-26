@@ -100,7 +100,7 @@ function LocationForm({ location, warehouses, onDone }: FormProps) {
           {errors.warehouse && (
             <Hint.Root hasError>
               <Hint.Icon as={RiErrorWarningFill} />
-              {errors.warehouse.message}
+              Pick a warehouse
             </Hint.Root>
           )}
         </div>
