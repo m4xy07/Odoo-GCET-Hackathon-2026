@@ -51,3 +51,17 @@ test('dashboard receipt card opens only the ready receipts', async ({
     expect(status.trim()).toBe('Ready');
   }
 });
+
+test('dashboard trend shows moves per day with a readable table behind it', async ({
+  page,
+}) => {
+  await openPage(page, '/', 'Dashboard');
+  await expect(
+    page.getByRole('heading', { name: /Moves per day/ }),
+  ).toBeVisible();
+  await page.locator('[aria-label*=" in, "]').last().hover();
+  await expect(page.getByRole('tooltip')).toContainText(/\d+ in · \d+ out/);
+  await expect(
+    page.getByRole('table', { name: 'Moves per day, last 14 days' }),
+  ).toBeAttached();
+});
