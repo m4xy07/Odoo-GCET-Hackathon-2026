@@ -13,10 +13,8 @@ import {
   createLocation,
   createProduct,
   createWarehouse,
-  ensureVirtualLocations,
-  getVirtualLocation,
 } from '@/lib/services/catalog';
-import { createOperation } from '@/lib/services/operations';
+import { createOperation, virtualLocation } from '@/lib/services/operations';
 import { applyAction } from '@/lib/services/inventory';
 import { Category } from '@/models/Category';
 import { Counter } from '@/models/Counter';
@@ -66,7 +64,6 @@ async function main() {
   const userId = String(user._id);
 
   // ---- settings ----
-  await ensureVirtualLocations();
   const wh = await createWarehouse({
     name: 'Main Warehouse',
     shortCode: 'WH',
@@ -87,8 +84,8 @@ async function main() {
     shortCode: 'Prod',
     warehouse: wh.id,
   });
-  const vendors = await getVirtualLocation('vendor');
-  const customers = await getVirtualLocation('customer');
+  const vendors = { id: String((await virtualLocation('vendor'))._id) };
+  const customers = { id: String((await virtualLocation('customer'))._id) };
   if (!stock1 || !stock2) throw new Error('could not create stock locations');
 
   // ---- catalog. Opening stock is logged as an "Initial stock" adjustment. Chair ends up low, Steel Rods out of stock. ----

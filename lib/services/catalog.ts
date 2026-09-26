@@ -100,36 +100,9 @@ export async function deleteWarehouse(id: string) {
 
 // ---- locations ----
 
-// The fixed far ends of every move. Receipts come from Vendors, deliveries go to Customers,
-// adjustments balance against Virtual/Adjustment. They belong to no warehouse and hold no stock.
-const VIRTUAL_LOCATIONS = [
-  { type: 'vendor', name: 'Vendors', shortCode: 'Vendors', fullName: 'Partners/Vendors' },
-  { type: 'customer', name: 'Customers', shortCode: 'Customers', fullName: 'Partners/Customers' },
-  { type: 'adjustment', name: 'Adjustment', shortCode: 'Adjustment', fullName: 'Virtual/Adjustment' },
-] as const;
-
-let virtualsReady = false;
-
-// Safe to call often: upserts by type, so it only writes on the first call against an empty database
-export async function ensureVirtualLocations() {
-  if (virtualsReady) return;
-  await connectDB();
-  await Location.bulkWrite(
-    VIRTUAL_LOCATIONS.map((v) => ({
-      updateOne: { filter: { type: v.type }, update: { $setOnInsert: { ...v, warehouse: null } }, upsert: true },
-    })),
-  );
-  virtualsReady = true;
-}
-
-export async function getVirtualLocation(type: Exclude<LocationType, 'internal'>) {
-  await ensureVirtualLocations();
-  const location = await Location.findOne({ type }).lean();
-  return toLocationRow(location!); // ensureVirtualLocations just made sure it exists
-}
-
+// Partners/Vendors, Partners/Customers and Virtual/Adjustment come from virtualLocation() in operations.ts
 export async function listLocations(filter: { type?: LocationType; warehouse?: string } = {}) {
-  await ensureVirtualLocations();
+  await connectDB();
   const query: Record<string, string> = {};
   if (filter.type) query.type = filter.type;
   if (filter.warehouse && isValidObjectId(filter.warehouse)) query.warehouse = filter.warehouse;
